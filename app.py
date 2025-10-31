@@ -1,5 +1,5 @@
 # here we start with the formatting of the Welcome Page
-st.set_page_config(page_title="NexTrip", page_icon="logo.jpg")
+st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
 
 # The following parts represent the formatting of the layout for the user (logo, inputs: name, budget type, current location) 
 col1, col2, col3 = st.columns([1, 2, 1])
