@@ -23,10 +23,10 @@ if st.session_state.page == "user_info":
     ---
     
     How What2Watch helps you?
-    We are happy to help you choose your movie/serie night by suggesting THE BEST movie or serie, tailored to your needs.
+    We are happy to help you choose your movie/series night by suggesting THE BEST movie or series, tailored to your needs.
     
     
     
-    *Our app combines real-time data, past movie/serie choices paired with machine learning, to give you personalized movie/serie suggestions that match your style.*
+    *Our app combines real-time data, past movie/series choices paired with machine learning, to give you personalised movie/series suggestions that match your style.*
     ---
     """)
