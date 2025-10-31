@@ -1,3 +1,5 @@
+import streamlit as st
+
 # here we start with the formatting of the Welcome Page
 st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
 
