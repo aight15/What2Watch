@@ -122,5 +122,34 @@ if submitted:
         "intensity": intensity,
         "favorite_movie": fav_movie
     }
+st.subheader("Your Preferences Stored")
+    st.json(st.session_state.preferences)
 
+    if not genre_choice:
+        st.warning("Please select at least one genre.")
+    else:
+        st.subheader("🍿 Recommended Movies:")
+
+        for genre in genre_choice:
+            genre_id = GENRE_MAP.get(genre)
+            if genre_id:
+                movies = get_movies_by_genre(genre_id)
+                if movies:
+                    st.markdown(f"### 🎞️ {genre}")
+                    for movie in movies:
+                        title = movie.get("title")
+                        overview = movie.get("overview", "No description available.")
+                        poster_path = movie.get("poster_path")
+                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+
+                        st.markdown(f"**{title}**")
+                        if poster_url:
+                            st.image(poster_url, width=150)
+                        st.caption(overview)
+                        st.markdown("---")
+                else:
+                    st.write(f"No movies found for {genre}.")
+
+with st.expander("View Stored Preferences"):
+    st.write(st.session_state.preferences)
     
