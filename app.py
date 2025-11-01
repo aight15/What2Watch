@@ -87,7 +87,7 @@ with st.form("movie_form"):
 
     content_type = st.radio("Film or Series or both?", ["Film", "Series", "Both"])
 
-time_available = st.radio(
+    time_available = st.radio(
         "How much time do you have?",
         ["< 1 hour", "1–2 hours", "2–3 hours", "3+ hours"]
     )
