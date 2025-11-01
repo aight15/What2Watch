@@ -1,0 +1,59 @@
+import streamlit as st
+
+# Title
+st.title("🎬 Mood-Based Movie Recommender")
+
+# Introduction
+st.write("Answer a few quick questions, and we'll suggest a movie genre based on your mood and preferences!")
+
+# Mood selection
+mood = st.selectbox(
+    "How are you feeling today?",
+    ["Happy", "Sad", "Adventurous", "Romantic", "Bored", "Scared", "Thoughtful"]
+)
+
+# Preferred movie length
+length = st.radio(
+    "What kind of movie length do you prefer?",
+    ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"]
+)
+
+# Genre preference
+genre = st.multiselect(
+    "What genres do you enjoy?",
+    ["Comedy", "Drama", "Action", "Romance", "Horror", "Sci-Fi", "Documentary"]
+)
+
+# Intensity level
+intensity = st.slider("How intense should the movie be?", 1, 10, 5)
+
+# Favorite recent movie (optional)
+fav_movie = st.text_input("What's a movie you've liked recently?")
+
+# Recommend button
+if st.button("🎥 Recommend me something"):
+    st.subheader("🧠 Based on your mood and choices...")
+
+    # Simple mood-based suggestion logic
+    suggestions = {
+        "Happy": "a light-hearted Comedy or feel-good Drama",
+        "Sad": "an uplifting Romance or inspirational Documentary",
+        "Adventurous": "an Action-packed or Sci-Fi movie",
+        "Romantic": "a sweet Romantic movie or Rom-Com",
+        "Bored": "a thrilling Mystery or fast-paced Action movie",
+        "Scared": "a chilling Horror movie",
+        "Thoughtful": "a thought-provoking Drama or Documentary"
+    }
+
+    mood_suggestion = suggestions.get(mood, "a good movie that suits your taste")
+
+    st.write(f"🎯 You might enjoy **{mood_suggestion}**.")
+
+    if genre:
+        st.write(f"🎞️ You seem to like: {', '.join(genre)}.")
+
+    if fav_movie:
+        st.write(f"📌 Since you liked *{fav_movie}*, you might enjoy something similar.")
+
+    st.write("🍿 Time to grab some popcorn and hit play!")
+
