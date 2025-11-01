@@ -1,0 +1,111 @@
+import streamlit as st
+import requests
+
+# TMDb API Key
+TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+
+# Genre Mapping
+GENRE_MAP = {
+    "Action": 28,
+    "Comedy": 35,
+    "Drama": 18,
+    "Romance": 10749,
+    "Horror": 27,
+    "Sci-Fi": 878,
+    "Documentary": 99,
+    "Animation": 16,
+    "Mystery": 9648,
+    "Thriller": 53
+}
+
+# Mood to genre suggestion
+MOOD_GENRE_SUGGESTION = {
+    "Happy": ["Comedy", "Animation"],
+    "Sad": ["Romance", "Documentary"],
+    "Adventurous": ["Action", "Sci-Fi"],
+    "Romantic": ["Romance", "Drama"],
+    "Bored": ["Thriller", "Mystery"],
+    "Scared": ["Horror"],
+    "Thoughtful": ["Drama", "Documentary"]
+}
+
+# Get movie recommendations from TMDb
+def get_movies_by_genre(genre_id):
+    url = f"{TMDB_BASE_URL}/discover/movie"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc",
+        "language": "en-US"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:5]
+    return []
+
+# Title
+st.title("What2Watch")
+
+# Intro
+st.markdown("Tell us how you're feeling, and we'll find the perfect movie for you!")
+
+# Initialize session state for preferences
+if "preferences" not in st.session_state:
+    st.session_state.preferences = {}
+
+# Form for user input
+with st.form("movie_form"):
+    mood = st.selectbox("How are you feeling today?", list(MOOD_GENRE_SUGGESTION.keys()))
+    genre_choice = st.multiselect(
+        "Pick your favorite genres:",
+        options=list(GENRE_MAP.keys()),
+        default=MOOD_GENRE_SUGGESTION.get(mood, [])
+    )
+    length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
+    intensity = st.slider("How intense should the movie be?", 1, 10, 5)
+    fav_movie = st.text_input("What's a movie you've liked recently?")
+
+    submitted = st.form_submit_button("🎥 Recommend Me Something!")
+
+if submitted:
+    # Store preferences
+    st.session_state.preferences = {
+        "mood": mood,
+        "genres": genre_choice,
+        "length": length,
+        "intensity": intensity,
+        "favorite_movie": fav_movie
+    }
+
+    st.subheader("✅ Your Preferences Stored")
+    st.json(st.session_state.preferences)
+
+    if not genre_choice:
+        st.warning("Please select at least one genre.")
+    else:
+        st.subheader("🍿 Recommended Movies:")
+
+        for genre in genre_choice:
+            genre_id = GENRE_MAP.get(genre)
+            if genre_id:
+                movies = get_movies_by_genre(genre_id)
+                if movies:
+                    st.markdown(f"### 🎞️ {genre}")
+                    for movie in movies:
+                        title = movie.get("title")
+                        overview = movie.get("overview", "No description available.")
+                        poster_path = movie.get("poster_path")
+                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+
+                        st.markdown(f"**{title}**")
+                        if poster_url:
+                            st.image(poster_url, width=150)
+                        st.caption(overview)
+                        st.markdown("---")
+                else:
+                    st.write(f"No movies found for {genre}.")
+
+# Optionally: Show previously stored preferences
+with st.expander("🧠 View Stored Preferences"):
+    st.write(st.session_state.preferences)
