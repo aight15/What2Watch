@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Title
-st.title("🎬 What2Watch")
+st.title("What2Watch")
 
 # Introduction
 st.write("Answer a few quick questions, and we'll suggest a movie genre based on your mood and preferences!")
