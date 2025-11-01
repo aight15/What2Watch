@@ -11,16 +11,6 @@ GENRE_MAP = {
     "Animation": 16, "Mystery": 9648, "Thriller": 53
 }
 
-MOOD_GENRE_SUGGESTION = {
-    "Happy": ["Comedy", "Animation"],
-    "Sad": ["Romance", "Documentary"],
-    "Adventurous": ["Action", "Sci-Fi"],
-    "Romantic": ["Romance", "Drama"],
-    "Bored": ["Thriller", "Mystery"],
-    "Scared": ["Horror"],
-    "Thoughtful": ["Drama", "Documentary"]
-}
-
 def get_movies_by_genre(genre_id):
     url = f"{TMDB_BASE_URL}/discover/movie"
     params = {
