@@ -87,4 +87,40 @@ with st.form("movie_form"):
 
     content_type = st.radio("Film or Series or both?", ["Film", "Series", "Both"])
 
+time_available = st.radio(
+        "How much time do you have?",
+        ["< 1 hour", "1–2 hours", "2–3 hours", "3+ hours"]
+    )
+
+    realism = st.radio("Should the movie be realistic or a fantasy?", ["Realistic", "Fantasy"])
+
+    modern_or_classic = st.radio("Modern or classic?", ["Modern", "Classic", "Doesn't matter"])
+
+    watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
+
+    gosling_fan = st.radio("Do you like Ryan Gosling?", ["Yes", "No", "Not sure"])
+
+    length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
+    intensity = st.slider("How intense should the movie be?", 1, 10, 5)
+    fav_movie = st.text_input("What's a movie you've liked recently?")
+
+    submitted = st.form_submit_button("🎥 Recommend Me Something!")
+
+if submitted:
+    # Store user preferences
+    st.session_state.preferences = {
+        "mood": mood,
+        "genres": genre_choice,
+        "streaming_services": streaming_services,
+        "content_type": content_type,
+        "time_available": time_available,
+        "realism": realism,
+        "modern_or_classic": modern_or_classic,
+        "watching_group": watching_group,
+        "gosling_fan": gosling_fan,
+        "length": length,
+        "intensity": intensity,
+        "favorite_movie": fav_movie
+    }
+
     
