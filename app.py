@@ -30,3 +30,27 @@ if st.session_state.page == "user_info":
     *Our app combines real-time data, past movie/series choices paired with machine learning, to give you personalised movie/series suggestions that match your style.*
     ---
     """)
+
+# start of questions
+import requests
+
+# TMDb API Key
+TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+
+GENRE_MAP = {
+    "Action": 28, "Comedy": 35, "Drama": 18, "Romance": 10749,
+    "Horror": 27, "Sci-Fi": 878, "Documentary": 99,
+    "Animation": 16, "Mystery": 9648, "Thriller": 53
+}
+
+MOOD_GENRE_SUGGESTION = {
+    "Happy": ["Comedy", "Animation"],
+    "Sad": ["Romance", "Documentary"],
+    "Adventurous": ["Action", "Sci-Fi"],
+    "Romantic": ["Romance", "Drama"],
+    "Bored": ["Thriller", "Mystery"],
+    "Scared": ["Horror"],
+    "Thoughtful": ["Drama", "Documentary"]
+
+    
