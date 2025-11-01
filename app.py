@@ -122,7 +122,7 @@ if submitted:
         "intensity": intensity,
         "favorite_movie": fav_movie
     }
-st.subheader("Your Preferences Stored")
+    st.subheader("Your Preferences Stored")
     st.json(st.session_state.preferences)
 
     if not genre_choice:
