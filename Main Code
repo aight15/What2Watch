@@ -132,7 +132,7 @@ if submitted:
         "favorite_movie": fav_movie
     }
 
-    st.subheader("✅ Your Preferences Stored")
+    st.subheader("Your Preferences Stored")
     st.json(st.session_state.preferences)
 
     if not genre_choice:
@@ -160,5 +160,5 @@ if submitted:
                 else:
                     st.write(f"No movies found for {genre}.")
 
-with st.expander("🧠 View Stored Preferences"):
+with st.expander("View Stored Preferences"):
     st.write(st.session_state.preferences)
