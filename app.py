@@ -52,5 +52,39 @@ MOOD_GENRE_SUGGESTION = {
     "Bored": ["Thriller", "Mystery"],
     "Scared": ["Horror"],
     "Thoughtful": ["Drama", "Documentary"]
+}
+
+def get_movies_by_genre(genre_id):
+    url = f"{TMDB_BASE_URL}/discover/movie"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc",
+        "language": "en-US"
+ }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:5]
+    return []
+
+if "preferences" not in st.session_state:
+    st.session_state.preferences = {}
+
+with st.form("movie_form"):
+
+    mood = st.selectbox("How are you feeling today?", list(MOOD_GENRE_SUGGESTION.keys()))
+
+    genre_choice = st.multiselect(
+        "Which genre are you interested in?",
+        options=list(GENRE_MAP.keys()),
+        default=MOOD_GENRE_SUGGESTION.get(mood, [])
+    )
+
+    streaming_services = st.multiselect(
+        "Which streaming services do you have?",
+        ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
+    )
+
+    content_type = st.radio("Film or Series or both?", ["Film", "Series", "Both"])
 
     
