@@ -74,8 +74,6 @@ def get_movies_by_genre(genre_id):
         return response.json().get("results", [])[:5]
     return []
 
-st.title("What2Watch")
-
 if "preferences" not in st.session_state:
     st.session_state.preferences = {}
 
