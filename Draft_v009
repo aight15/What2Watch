@@ -1,0 +1,292 @@
+import streamlit as st
+import requests
+
+# ------------------- PAGE SETUP -------------------
+st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
+
+# ------------------- LOGO AND TITLE -------------------
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image("logo.jpg", width=700)
+
+if "page" not in st.session_state:
+    st.session_state.page = "step1"
+
+def goto(page_name):
+    st.session_state.page = page_name
+
+# ------------------- TMDB SETUP -------------------
+TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+
+GENRE_MAP = {
+    "Action": 28, "Comedy": 35, "Drama": 18, "Romance": 10749,
+    "Horror": 27, "Sci-Fi": 878, "Documentary": 99,
+    "Animation": 16, "Mystery": 9648, "Thriller": 53
+}
+
+def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=None):
+    url = f"{TMDB_BASE_URL}/discover/movie"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.asc",
+        "language": "en-US",
+        "vote_count.gte": 100 if popularity_type == "popular" else 10
+    }
+
+    if animation_filter == "Animated":
+        params["with_genres"] = f"{genre_id},16"
+    elif animation_filter == "Live-action":
+        params["without_genres"] = "16"
+
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:5]
+    return []
+
+def get_movies_by_actor_or_director(name):
+    search_url = f"{TMDB_BASE_URL}/search/person"
+    search_params = {
+        "api_key": TMDB_API_KEY,
+        "query": name,
+        "language": "en-US"
+    }
+    response = requests.get(search_url, params=search_params)
+    if response.status_code == 200 and response.json()["results"]:
+        person_id = response.json()["results"][0]["id"]
+        discover_url = f"{TMDB_BASE_URL}/discover/movie"
+        discover_params = {
+            "api_key": TMDB_API_KEY,
+            "with_cast": person_id,
+            "sort_by": "popularity.desc",
+            "vote_count.gte": 50,
+            "language": "en-US"
+        }
+        movie_response = requests.get(discover_url, params=discover_params)
+        if movie_response.status_code == 200:
+            return movie_response.json().get("results", [])[:5]
+    return []
+
+def get_ryan_gosling_movies():
+    search_url = f"{TMDB_BASE_URL}/search/person"
+    search_params = {
+        "api_key": TMDB_API_KEY,
+        "query": "Ryan Gosling",
+        "language": "en-US"
+    }
+    person_response = requests.get(search_url, params=search_params)
+    if person_response.status_code == 200 and person_response.json()['results']:
+        gosling_id = person_response.json()['results'][0]['id']
+        movie_url = f"{TMDB_BASE_URL}/discover/movie"
+        movie_params = {
+            "api_key": TMDB_API_KEY,
+            "with_cast": gosling_id,
+            "sort_by": "vote_count.desc",
+            "vote_count.gte": 50,
+            "language": "en-US"
+        }
+        movie_response = requests.get(movie_url, params=movie_params)
+        if movie_response.status_code == 200:
+            movies = movie_response.json().get("results", [])
+            # sort by IMDb-style score
+            sorted_movies = sorted(movies, key=lambda x: x.get("vote_average", 0), reverse=True)
+            return sorted_movies[:10]  # always 10
+    return []
+
+def get_trailer(movie_id):
+    url = f"{TMDB_BASE_URL}/movie/{movie_id}/videos"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        videos = response.json().get("results", [])
+        for video in videos:
+            if video["site"] == "YouTube" and video["type"] == "Trailer":
+                return f"https://www.youtube.com/watch?v={video['key']}"
+    return None
+
+if "preferences" not in st.session_state:
+    st.session_state.preferences = {}
+
+def ryan_gosling_button():
+    with st.container():
+        col1, col2 = st.columns([5, 2])
+        with col2:
+            st.markdown("""
+                <style>
+                .element-container button {
+                    width: 100% !important;
+                    white-space: nowrap;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            if st.button("Ryan Gosling Movies", key="gosling_btn"):
+                goto("gosling")
+
+# ------------------- STEP 1 -------------------
+if st.session_state.page == "step1":
+    ryan_gosling_button()
+    st.title("What2Watch")
+    with st.form("step1_form"):
+        content_type = st.radio("Do you want to watch a movie, series, or both?", ["Film", "Series", "Both"])
+        next_button = st.form_submit_button("Next ➡️")
+    if next_button:
+        st.session_state.preferences["content_type"] = content_type
+        goto("step2")
+
+# ------------------- STEP 2 -------------------
+elif st.session_state.page == "step2":
+    ryan_gosling_button()
+    with st.form("step2_form"):
+        content_type = st.session_state.preferences.get("content_type", "Film")
+        if content_type == "Film":
+            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
+        elif content_type == "Series":
+            length = st.radio("Preferred series length:", ["< 30 min", "30–60 min", "60+ min"])
+        else:
+            length = st.radio("Preferred duration:", [
+                "Short Movie (< 90 min)",
+                "Medium Movie (90–120 min)",
+                "Long Movie (> 120 min)",
+                "Short Episode (< 30 min)",
+                "Standard Episode (30–60 min)",
+                "Long Episode (> 60 min)"
+            ])
+
+        streaming_services_options = ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
+        streaming_services = []
+        st.markdown("**Which streaming services do you have?**")
+        for service in streaming_services_options:
+            if st.checkbox(service):
+                streaming_services.append(service)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            next_button = st.form_submit_button("Next ➡️")
+
+    if next_button:
+        st.session_state.preferences["length"] = length
+        st.session_state.preferences["streaming_services"] = streaming_services
+        goto("step3")
+    elif back_button:
+        goto("step1")
+
+# ------------------- STEP 3 -------------------
+elif st.session_state.page == "step3":
+    ryan_gosling_button()
+    with st.form("step3_form"):
+        animation_preference = st.radio("Would you prefer animated or live-action?", ["Animated", "Live-action", "Both"])
+        modern_or_classic = st.radio("Modern or classic?", ["Modern", "Classic", "Doesn't matter"])
+        watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
+        genre_choice = st.multiselect("Which genre are you interested in?", options=list(GENRE_MAP.keys()))
+        popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])
+
+        actor_or_director = ""
+        if animation_preference != "Animated":
+            actor_or_director = st.text_input("Any actors or directors you love?")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            next_button = st.form_submit_button("Next ➡️")
+
+    if next_button:
+        st.session_state.preferences.update({
+            "animation_preference": animation_preference,
+            "modern_or_classic": modern_or_classic,
+            "watching_group": watching_group,
+            "genres": genre_choice,
+            "popularity_type": popularity_type,
+            "favorite_person": actor_or_director
+        })
+        goto("results")
+    elif back_button:
+        goto("step2")
+
+# ------------------- RESULTS -------------------
+elif st.session_state.page == "results":
+    prefs = st.session_state.preferences
+    if not prefs.get("genres"):
+        st.warning("Please select at least one genre.")
+    else:
+        st.subheader("Recommended Movies:")
+        for genre in prefs["genres"]:
+            genre_id = GENRE_MAP.get(genre)
+            if genre_id:
+                movies = get_movies_by_genre(
+                    genre_id,
+                    popularity_type="popular" if prefs["popularity_type"] == "Popular & trending" else "underrated",
+                    animation_filter=prefs.get("animation_preference")
+                )
+                if movies:
+                    st.markdown(f"### 🎞️ {genre}")
+                    for movie in movies:
+                        title = movie.get("title")
+                        overview = movie.get("overview", "No description available.")
+                        poster_path = movie.get("poster_path")
+                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                        imdb_score = movie.get("vote_average")
+                        movie_id = movie.get("id")
+                        trailer_url = get_trailer(movie_id)
+
+                        st.markdown(f"**{title}**")
+                        if poster_url:
+                            st.image(poster_url, width=150)
+                        st.markdown(f"**IMDb Score:** ⭐ {imdb_score}")
+                        st.caption(overview)
+                        if trailer_url:
+                            st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                        st.markdown("---")
+
+        if prefs.get("favorite_person"):
+            st.subheader(f"🎭 Movies featuring **{prefs['favorite_person']}**:")
+            person_movies = get_movies_by_actor_or_director(prefs["favorite_person"])
+            for movie in person_movies:
+                title = movie.get("title")
+                overview = movie.get("overview", "No description available.")
+                poster_path = movie.get("poster_path")
+                poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                imdb_score = movie.get("vote_average")
+                movie_id = movie.get("id")
+                trailer_url = get_trailer(movie_id)
+
+                st.markdown(f"**{title}**")
+                if poster_url:
+                    st.image(poster_url, width=150)
+                st.markdown(f"**IMDb Score:** ⭐ {imdb_score}")
+                st.caption(overview)
+                if trailer_url:
+                    st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                st.markdown("---")
+
+# ------------------- RYAN GOSLING MODE -------------------
+elif st.session_state.page == "gosling":
+    st.title("Ryan Gosling Recommendations")
+    gosling_movies = get_ryan_gosling_movies()
+    if gosling_movies:
+        st.markdown("⭐ Sorted by IMDb Score (Highest First)")
+        for movie in gosling_movies:
+            title = movie.get("title")
+            rating = movie.get("vote_average")
+            overview = movie.get("overview", "No description available.")
+            poster_path = movie.get("poster_path")
+            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+            movie_id = movie.get("id")
+            trailer_url = get_trailer(movie_id)
+
+            st.markdown(f"**{title}**")
+            if poster_url:
+                st.image(poster_url, width=150)
+            st.markdown(f"**IMDb Score:** ⭐ {rating}")
+            st.caption(overview)
+            if trailer_url:
+                st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+            st.markdown("---")
+    else:
+        st.warning("No Ryan Gosling movies found.")
