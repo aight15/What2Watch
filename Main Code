@@ -72,21 +72,47 @@ def get_ryan_gosling_movies():
             return movie_response.json().get("results", [])[:10]
     return []
 
+def get_trailer(movie_id):
+    url = f"{TMDB_BASE_URL}/movie/{movie_id}/videos"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        videos = response.json().get("results", [])
+        for video in videos:
+            if video["site"] == "YouTube" and video["type"] == "Trailer":
+                return f"https://www.youtube.com/watch?v={video['key']}"
+    return None
+
 if "preferences" not in st.session_state:
     st.session_state.preferences = {}
 
 # ------------------- RYAN GOSLING BUTTON -------------------
 def ryan_gosling_button():
     with st.container():
-        col1, col2 = st.columns([8, 1])
+        col1, col2 = st.columns([5, 2])
         with col2:
-            if st.button("🎬 Ryan Gosling Mode"):
-                goto("gosling")
+            st.markdown(
+                """
+                <style>
+                .ryan-button > button {
+                    width: 100%;
+                    white-space: nowrap;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+            with st.container():
+                if st.button("Ryan Gosling Movies", key="gosling_btn"):
+                    goto("gosling")
 
 # ------------------- STEP 1: CONTENT TYPE -------------------
 if st.session_state.page == "step1":
     ryan_gosling_button()
-    st.title("🎬 What2Watch")
+    st.title("What2Watch")
     with st.form("step1_form"):
         content_type = st.radio("Do you want to watch a movie, series, or both?", ["Film", "Series", "Both"])
         next_button = st.form_submit_button("Next ➡️")
@@ -169,7 +195,7 @@ elif st.session_state.page == "step4":
         with col1:
             back_button = st.form_submit_button("⬅️ Back")
         with col2:
-            submit_button = st.form_submit_button("🎥 Recommend Me Something!")
+            submit_button = st.form_submit_button("Recommend Me Something!")
 
     if submit_button:
         st.session_state.preferences["intensity"] = intensity
@@ -182,36 +208,40 @@ elif st.session_state.page == "step4":
 # ------------------- STEP 5: RESULTS -------------------
 elif st.session_state.page == "results":
     preferences = st.session_state.get("preferences", {})
-    st.subheader("✅ Your Preferences Stored")
-    st.json(preferences)
 
     if not preferences.get("genres"):
         st.warning("Please select at least one genre.")
     else:
-        st.subheader("🍿 Recommended Movies:")
+        st.subheader(" Recommended Movies:")
         for genre in preferences["genres"]:
             genre_id = GENRE_MAP.get(genre)
             if genre_id:
                 movies = get_movies_by_genre(genre_id)
                 if movies:
-                    st.markdown(f"### 🎞️ {genre}")
+                    st.markdown(f"### {genre}")
                     for movie in movies:
                         title = movie.get("title")
                         overview = movie.get("overview", "No description available.")
                         poster_path = movie.get("poster_path")
                         poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                        imdb_score = movie.get("vote_average")
+                        movie_id = movie.get("id")
+                        trailer_url = get_trailer(movie_id)
 
                         st.markdown(f"**{title}**")
                         if poster_url:
                             st.image(poster_url, width=150)
+                        st.markdown(f"**IMDb Score:** ⭐ {imdb_score}")
                         st.caption(overview)
+                        if trailer_url:
+                            st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
                         st.markdown("---")
                 else:
                     st.write(f"No movies found for {genre}.")
 
 # ------------------- STEP 6: RYAN GOSLING MODE -------------------
 elif st.session_state.page == "gosling":
-    st.title("🎬 Ryan Gosling Recommendations")
+    st.title("Ryan Gosling Recommendations")
     gosling_movies = get_ryan_gosling_movies()
     if gosling_movies:
         for movie in gosling_movies:
@@ -220,15 +250,16 @@ elif st.session_state.page == "gosling":
             overview = movie.get("overview", "No description available.")
             poster_path = movie.get("poster_path")
             poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+            movie_id = movie.get("id")
+            trailer_url = get_trailer(movie_id)
 
-            st.markdown(f"**{title}**  ⭐ {rating}")
+            st.markdown(f"**{title}**")
             if poster_url:
                 st.image(poster_url, width=150)
+            st.markdown(f"**IMDb Score:** ⭐ {rating}")
             st.caption(overview)
+            if trailer_url:
+                st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
             st.markdown("---")
     else:
         st.warning("No Ryan Gosling movies found.")
-
-# ------------------- View Stored Preferences -------------------
-with st.expander("View Stored Preferences"):
-    st.write(st.session_state.get("preferences", {}))
