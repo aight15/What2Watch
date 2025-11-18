@@ -1,0 +1,234 @@
+import streamlit as st
+import requests
+
+# ------------------- PAGE SETUP -------------------
+st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
+
+# ------------------- LOGO AND TITLE -------------------
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image("logo.jpg", width=700)
+
+if "page" not in st.session_state:
+    st.session_state.page = "step1"
+
+# ------------------- PAGE NAVIGATION -------------------
+def goto(page_name):
+    st.session_state.page = page_name
+
+# ------------------- TMDB SETUP -------------------
+TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
+
+GENRE_MAP = {
+    "Action": 28, "Comedy": 35, "Drama": 18, "Romance": 10749,
+    "Horror": 27, "Sci-Fi": 878, "Documentary": 99,
+    "Animation": 16, "Mystery": 9648, "Thriller": 53
+}
+
+MOOD_GENRE_SUGGESTION = {
+    "Happy": ["Comedy", "Animation"],
+    "Sad": ["Romance", "Documentary"],
+    "Adventurous": ["Action", "Sci-Fi"],
+    "Romantic": ["Romance", "Drama"],
+    "Bored": ["Thriller", "Mystery"],
+    "Scared": ["Horror"],
+    "Thoughtful": ["Drama", "Documentary"]
+}
+
+def get_movies_by_genre(genre_id):
+    url = f"{TMDB_BASE_URL}/discover/movie"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc",
+        "language": "en-US"
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:5]
+    return []
+
+def get_ryan_gosling_movies():
+    search_url = f"{TMDB_BASE_URL}/search/person"
+    search_params = {
+        "api_key": TMDB_API_KEY,
+        "query": "Ryan Gosling",
+        "language": "en-US"
+    }
+    person_response = requests.get(search_url, params=search_params)
+    if person_response.status_code == 200 and person_response.json()['results']:
+        gosling_id = person_response.json()['results'][0]['id']
+        movie_url = f"{TMDB_BASE_URL}/discover/movie"
+        movie_params = {
+            "api_key": TMDB_API_KEY,
+            "with_cast": gosling_id,
+            "sort_by": "vote_average.desc",
+            "vote_count.gte": 100,
+            "language": "en-US"
+        }
+        movie_response = requests.get(movie_url, params=movie_params)
+        if movie_response.status_code == 200:
+            return movie_response.json().get("results", [])[:10]
+    return []
+
+if "preferences" not in st.session_state:
+    st.session_state.preferences = {}
+
+# ------------------- RYAN GOSLING BUTTON -------------------
+def ryan_gosling_button():
+    with st.container():
+        col1, col2 = st.columns([8, 1])
+        with col2:
+            if st.button("🎬 Ryan Gosling Mode"):
+                goto("gosling")
+
+# ------------------- STEP 1: CONTENT TYPE -------------------
+if st.session_state.page == "step1":
+    ryan_gosling_button()
+    st.title("🎬 What2Watch")
+    with st.form("step1_form"):
+        content_type = st.radio("Do you want to watch a movie, series, or both?", ["Film", "Series", "Both"])
+        next_button = st.form_submit_button("Next ➡️")
+    if next_button:
+        st.session_state.preferences["content_type"] = content_type
+        goto("step2")
+
+# ------------------- STEP 2: DURATION + STREAMING -------------------
+elif st.session_state.page == "step2":
+    ryan_gosling_button()
+    with st.form("step2_form"):
+        content_type = st.session_state.preferences.get("content_type", "Film")
+        if content_type == "Film":
+            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
+        elif content_type == "Series":
+            length = st.radio("Preferred series length:", ["< 30 min", "30–60 min", "60+ min"])
+        else:
+            length = st.radio("Preferred duration:", [
+                "Short Movie (< 90 min)",
+                "Medium Movie (90–120 min)",
+                "Long Movie (> 120 min)",
+                "Short Episode (< 30 min)",
+                "Standard Episode (30–60 min)",
+                "Long Episode (> 60 min)"
+            ])
+
+        streaming_services_options = ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
+        streaming_services = []
+        st.markdown("**Which streaming services do you have?**")
+        for service in streaming_services_options:
+            if st.checkbox(service):
+                streaming_services.append(service)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            next_button = st.form_submit_button("Next ➡️")
+
+    if next_button:
+        st.session_state.preferences["length"] = length
+        st.session_state.preferences["streaming_services"] = streaming_services
+        goto("step3")
+    elif back_button:
+        goto("step1")
+
+# ------------------- STEP 3: GENRE + STYLE -------------------
+elif st.session_state.page == "step3":
+    ryan_gosling_button()
+    with st.form("step3_form"):
+        realism = st.radio("Should the content be realistic or a fantasy?", ["Realistic", "Fantasy"])
+        modern_or_classic = st.radio("Modern or classic?", ["Modern", "Classic", "Doesn't matter"])
+        watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
+        genre_choice = st.multiselect("Which genre are you interested in?", options=list(GENRE_MAP.keys()))
+
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            next_button = st.form_submit_button("Next ➡️")
+
+    if next_button:
+        st.session_state.preferences["realism"] = realism
+        st.session_state.preferences["modern_or_classic"] = modern_or_classic
+        st.session_state.preferences["watching_group"] = watching_group
+        st.session_state.preferences["genres"] = genre_choice
+        goto("step4")
+    elif back_button:
+        goto("step2")
+
+# ------------------- STEP 4: MOOD + INTENSITY -------------------
+elif st.session_state.page == "step4":
+    ryan_gosling_button()
+    with st.form("step4_form"):
+        intensity = st.slider("How intense should the movie/series be?", 1, 10, 5)
+        fav_movie = st.text_input("What's a movie or show you've liked recently?")
+        mood = st.selectbox("Finally, how are you feeling today?", list(MOOD_GENRE_SUGGESTION.keys()))
+
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            submit_button = st.form_submit_button("🎥 Recommend Me Something!")
+
+    if submit_button:
+        st.session_state.preferences["intensity"] = intensity
+        st.session_state.preferences["favorite_movie"] = fav_movie
+        st.session_state.preferences["mood"] = mood
+        goto("results")
+    elif back_button:
+        goto("step3")
+
+# ------------------- STEP 5: RESULTS -------------------
+elif st.session_state.page == "results":
+    preferences = st.session_state.get("preferences", {})
+    st.subheader("✅ Your Preferences Stored")
+    st.json(preferences)
+
+    if not preferences.get("genres"):
+        st.warning("Please select at least one genre.")
+    else:
+        st.subheader("🍿 Recommended Movies:")
+        for genre in preferences["genres"]:
+            genre_id = GENRE_MAP.get(genre)
+            if genre_id:
+                movies = get_movies_by_genre(genre_id)
+                if movies:
+                    st.markdown(f"### 🎞️ {genre}")
+                    for movie in movies:
+                        title = movie.get("title")
+                        overview = movie.get("overview", "No description available.")
+                        poster_path = movie.get("poster_path")
+                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+
+                        st.markdown(f"**{title}**")
+                        if poster_url:
+                            st.image(poster_url, width=150)
+                        st.caption(overview)
+                        st.markdown("---")
+                else:
+                    st.write(f"No movies found for {genre}.")
+
+# ------------------- STEP 6: RYAN GOSLING MODE -------------------
+elif st.session_state.page == "gosling":
+    st.title("🎬 Ryan Gosling Recommendations")
+    gosling_movies = get_ryan_gosling_movies()
+    if gosling_movies:
+        for movie in gosling_movies:
+            title = movie.get("title")
+            rating = movie.get("vote_average")
+            overview = movie.get("overview", "No description available.")
+            poster_path = movie.get("poster_path")
+            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+
+            st.markdown(f"**{title}**  ⭐ {rating}")
+            if poster_url:
+                st.image(poster_url, width=150)
+            st.caption(overview)
+            st.markdown("---")
+    else:
+        st.warning("No Ryan Gosling movies found.")
+
+# ------------------- View Stored Preferences -------------------
+with st.expander("View Stored Preferences"):
+    st.write(st.session_state.get("preferences", {}))
