@@ -1,47 +1,22 @@
 import streamlit as st
-
-
-
-
-# here we start with the formatting of the Welcome Page
-st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
-
-# The following parts represent the formatting of the layout for the user (logo, inputs: name, budget type, current location) 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.image("logo.jpg", width=700) 
-if "page" not in st.session_state:
-    st.session_state.page = "user_info"
-# this is the navigation function
-def goto(page_name):
-    st.session_state.page = page_name
-if st.session_state.page == "user_info":
-    st.title("Welcome to What2Watch")
-    st.write("_Define your preferred criteria and find the perfect Movie or Series!_")
-# Introduction to our app and explanation of our business case (on a sidebar)
-    st.sidebar.markdown(""" 
-    Findin a movie or a series can be complicated and time-consuming. 
-    With countless Movies/Series, genres, lengths and personal preferences, finding the PERFECT movie/serie is often stressful and time-consuming.
-    
-    ---
-    
-    How What2Watch helps you?
-    We are happy to help you choose your movie/series night by suggesting THE BEST movie or series, tailored to your needs.
-    
-    
-    
-    *Our app combines real-time data, past movie/series choices paired with machine learning, to give you personalised movie/series suggestions that match your style.*
-    ---
-    """)
-
-
-
-
-
-# start of questions
 import requests
 
-# TMDb API Key
+# ------------------- PAGE SETUP -------------------
+st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
+
+# ------------------- LOGO AND TITLE -------------------
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image("logo.jpg", width=700)
+
+if "page" not in st.session_state:
+    st.session_state.page = "step1"
+
+# ------------------- PAGE NAVIGATION -------------------
+def goto(page_name):
+    st.session_state.page = page_name
+
+# ------------------- TMDB SETUP -------------------
 TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 
@@ -74,71 +49,147 @@ def get_movies_by_genre(genre_id):
         return response.json().get("results", [])[:5]
     return []
 
+def get_ryan_gosling_movies():
+    search_url = f"{TMDB_BASE_URL}/search/person"
+    search_params = {
+        "api_key": TMDB_API_KEY,
+        "query": "Ryan Gosling",
+        "language": "en-US"
+    }
+    person_response = requests.get(search_url, params=search_params)
+    if person_response.status_code == 200 and person_response.json()['results']:
+        gosling_id = person_response.json()['results'][0]['id']
+        movie_url = f"{TMDB_BASE_URL}/discover/movie"
+        movie_params = {
+            "api_key": TMDB_API_KEY,
+            "with_cast": gosling_id,
+            "sort_by": "vote_average.desc",
+            "vote_count.gte": 100,
+            "language": "en-US"
+        }
+        movie_response = requests.get(movie_url, params=movie_params)
+        if movie_response.status_code == 200:
+            return movie_response.json().get("results", [])[:10]
+    return []
+
 if "preferences" not in st.session_state:
     st.session_state.preferences = {}
 
-with st.form("movie_form"):
+# ------------------- RYAN GOSLING BUTTON -------------------
+def ryan_gosling_button():
+    with st.container():
+        col1, col2 = st.columns([8, 1])
+        with col2:
+            if st.button("🎬 Ryan Gosling Mode"):
+                goto("gosling")
 
-    mood = st.selectbox("How are you feeling today?", list(MOOD_GENRE_SUGGESTION.keys()))
+# ------------------- STEP 1: CONTENT TYPE -------------------
+if st.session_state.page == "step1":
+    ryan_gosling_button()
+    st.title("🎬 What2Watch")
+    with st.form("step1_form"):
+        content_type = st.radio("Do you want to watch a movie, series, or both?", ["Film", "Series", "Both"])
+        next_button = st.form_submit_button("Next ➡️")
+    if next_button:
+        st.session_state.preferences["content_type"] = content_type
+        goto("step2")
 
-    genre_choice = st.multiselect(
-        "Which genre are you interested in?",
-        options=list(GENRE_MAP.keys()),
-        default=MOOD_GENRE_SUGGESTION.get(mood, [])
-    )
+# ------------------- STEP 2: DURATION + STREAMING -------------------
+elif st.session_state.page == "step2":
+    ryan_gosling_button()
+    with st.form("step2_form"):
+        content_type = st.session_state.preferences.get("content_type", "Film")
+        if content_type == "Film":
+            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
+        elif content_type == "Series":
+            length = st.radio("Preferred series length:", ["< 30 min", "30–60 min", "60+ min"])
+        else:
+            length = st.radio("Preferred duration:", [
+                "Short Movie (< 90 min)",
+                "Medium Movie (90–120 min)",
+                "Long Movie (> 120 min)",
+                "Short Episode (< 30 min)",
+                "Standard Episode (30–60 min)",
+                "Long Episode (> 60 min)"
+            ])
 
-    streaming_services = st.multiselect(
-        "Which streaming services do you have?",
-        ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
-    )
+        streaming_services_options = ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
+        streaming_services = []
+        st.markdown("**Which streaming services do you have?**")
+        for service in streaming_services_options:
+            if st.checkbox(service):
+                streaming_services.append(service)
 
-    content_type = st.radio("Film or Series or both?", ["Film", "Series", "Both"])
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            next_button = st.form_submit_button("Next ➡️")
 
-    time_available = st.radio(
-        "How much time do you have?",
-        ["< 1 hour", "1–2 hours", "2–3 hours", "3+ hours"]
-    )
+    if next_button:
+        st.session_state.preferences["length"] = length
+        st.session_state.preferences["streaming_services"] = streaming_services
+        goto("step3")
+    elif back_button:
+        goto("step1")
 
-    realism = st.radio("Should the movie be realistic or a fantasy?", ["Realistic", "Fantasy"])
+# ------------------- STEP 3: GENRE + STYLE -------------------
+elif st.session_state.page == "step3":
+    ryan_gosling_button()
+    with st.form("step3_form"):
+        realism = st.radio("Should the content be realistic or a fantasy?", ["Realistic", "Fantasy"])
+        modern_or_classic = st.radio("Modern or classic?", ["Modern", "Classic", "Doesn't matter"])
+        watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
+        genre_choice = st.multiselect("Which genre are you interested in?", options=list(GENRE_MAP.keys()))
 
-    modern_or_classic = st.radio("Modern or classic?", ["Modern", "Classic", "Doesn't matter"])
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            next_button = st.form_submit_button("Next ➡️")
 
-    watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
+    if next_button:
+        st.session_state.preferences["realism"] = realism
+        st.session_state.preferences["modern_or_classic"] = modern_or_classic
+        st.session_state.preferences["watching_group"] = watching_group
+        st.session_state.preferences["genres"] = genre_choice
+        goto("step4")
+    elif back_button:
+        goto("step2")
 
-    gosling_fan = st.radio("Do you like Ryan Gosling?", ["Yes", "No", "Not sure"])
+# ------------------- STEP 4: MOOD + INTENSITY -------------------
+elif st.session_state.page == "step4":
+    ryan_gosling_button()
+    with st.form("step4_form"):
+        intensity = st.slider("How intense should the movie/series be?", 1, 10, 5)
+        fav_movie = st.text_input("What's a movie or show you've liked recently?")
+        mood = st.selectbox("Finally, how are you feeling today?", list(MOOD_GENRE_SUGGESTION.keys()))
 
-    length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
-    intensity = st.slider("How intense should the movie be?", 1, 10, 5)
-    fav_movie = st.text_input("What's a movie you've liked recently?")
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("⬅️ Back")
+        with col2:
+            submit_button = st.form_submit_button("🎥 Recommend Me Something!")
 
-    submitted = st.form_submit_button("🎥 Recommend Me Something!")
+    if submit_button:
+        st.session_state.preferences["intensity"] = intensity
+        st.session_state.preferences["favorite_movie"] = fav_movie
+        st.session_state.preferences["mood"] = mood
+        goto("results")
+    elif back_button:
+        goto("step3")
 
-if submitted:
-    # Store user preferences
-    st.session_state.preferences = {
-        "mood": mood,
-        "genres": genre_choice,
-        "streaming_services": streaming_services,
-        "content_type": content_type,
-        "time_available": time_available,
-        "realism": realism,
-        "modern_or_classic": modern_or_classic,
-        "watching_group": watching_group,
-        "gosling_fan": gosling_fan,
-        "length": length,
-        "intensity": intensity,
-        "favorite_movie": fav_movie
-    }
+# ------------------- STEP 5: RESULTS -------------------
+elif st.session_state.page == "results":
+    preferences = st.session_state.get("preferences", {})
+    st.subheader("✅ Your Preferences Stored")
+    st.json(preferences)
 
-    st.subheader("Your Preferences Stored")
-    st.json(st.session_state.preferences)
-
-    if not genre_choice:
+    if not preferences.get("genres"):
         st.warning("Please select at least one genre.")
     else:
         st.subheader("🍿 Recommended Movies:")
-
-        for genre in genre_choice:
+        for genre in preferences["genres"]:
             genre_id = GENRE_MAP.get(genre)
             if genre_id:
                 movies = get_movies_by_genre(genre_id)
@@ -158,5 +209,26 @@ if submitted:
                 else:
                     st.write(f"No movies found for {genre}.")
 
+# ------------------- STEP 6: RYAN GOSLING MODE -------------------
+elif st.session_state.page == "gosling":
+    st.title("🎬 Ryan Gosling Recommendations")
+    gosling_movies = get_ryan_gosling_movies()
+    if gosling_movies:
+        for movie in gosling_movies:
+            title = movie.get("title")
+            rating = movie.get("vote_average")
+            overview = movie.get("overview", "No description available.")
+            poster_path = movie.get("poster_path")
+            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+
+            st.markdown(f"**{title}**  ⭐ {rating}")
+            if poster_url:
+                st.image(poster_url, width=150)
+            st.caption(overview)
+            st.markdown("---")
+    else:
+        st.warning("No Ryan Gosling movies found.")
+
+# ------------------- View Stored Preferences -------------------
 with st.expander("View Stored Preferences"):
-    st.write(st.session_state.preferences)
+    st.write(st.session_state.get("preferences", {}))
