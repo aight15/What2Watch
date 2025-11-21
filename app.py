@@ -265,6 +265,10 @@ elif st.session_state.page == "results":
                     st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
                 st.markdown("---")
 
+        st.write("")  
+        if st.button("Start Over"):
+            goto("step1")
+
 # ------------------- RYAN GOSLING MODE -------------------
 elif st.session_state.page == "gosling":
     st.title("Ryan Gosling Recommendations")
@@ -290,3 +294,7 @@ elif st.session_state.page == "gosling":
             st.markdown("---")
     else:
         st.warning("No Ryan Gosling movies found.")
+
+        st.write("")  
+        if st.button("Start Over"):
+            goto("step1")
