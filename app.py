@@ -295,6 +295,6 @@ elif st.session_state.page == "gosling":
     else:
         st.warning("No Ryan Gosling movies found.")
 
-        st.write("")  
-        if st.button("Start Over"):
-            goto("step1")
+    st.write("")  
+    if st.button("Start Over"):
+        goto("step1")
