@@ -264,6 +264,9 @@ elif st.session_state.page == "results":
                 if trailer_url:
                     st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
                 st.markdown("---")
+        st.write("")  
+        if st.button("Start Over"):
+            goto("step1")
 
 # ------------------- RYAN GOSLING MODE -------------------
 elif st.session_state.page == "gosling":
