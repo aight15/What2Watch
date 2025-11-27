@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.graph_objects as go
 import requests
 
 # ------------------- PAGE SETUP -------------------
@@ -16,7 +17,7 @@ def goto(page_name):
     st.session_state.page = page_name
 
 # ------------------- SIDE BAR ---------------------
-import plotly.graph_objects as go
+
 st.set_page_config(page_title="Movie Preference Radar", layout="wide")
 
 st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
