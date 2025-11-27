@@ -24,11 +24,23 @@ st.set_page_config(page_title="Movie Preference Radar", layout="wide")
 st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
 movies=["Pixels","The Conjuring", "Blade Runner 2049", "The Shawshank Redemption","John Wick","The Notebook"]
 
-selected_movies = st.sidebar.multiselect(
-    "Pick one or more:",
-    options=movies,
-    default=[]
-)
+movies = [
+    "Pixels",
+    "The Conjuring",
+    "Blade Runner 2049",
+    "The Shawshank Redemption",
+    "John Wick",
+    "The Notebook"
+]
+
+# store user choices
+choices = {}
+for movie in movies:
+    choices[movie] = st.sidebar.checkbox(movie)
+
+# Convert to list of chosen movies
+selected_movies = [movie for movie, checked in choices.items() if checked]
+
 
 genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
 
