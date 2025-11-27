@@ -77,7 +77,7 @@ genre_scores = {g: 0 for g in genres}
 
 for title in selected_titles:
     for g in genres:
-        genre_scores[g] += title_genres[titles][g]
+        genre_scores[g] += title_genres[title][g]
 
 values = [genre_scores[g] for g in genres]
 values += values[:1]
