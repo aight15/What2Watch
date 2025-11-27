@@ -1,5 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import numpy as np
 import requests
 
 # ------------------- PAGE SETUP -------------------
@@ -54,29 +55,21 @@ values_loop = values + [values[0]]
 genres_loop = genres + [genres[0]]
 
 # --- RADAR CHART ---
-fig = plt.Figure()
+num_vars = len(genres)
 
-fig.add_trace(plt.Scatterpolar(
-    r=values_loop,
-    theta=genres_loop,
-    fill='toself',
-    name='Genre preference'
-))
+angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+angles += angles[:1]
 
-fig.update_layout(
-    polar=dict(
-        radialaxis=dict(
-            visible=True,
-            range=[0, max(1, max(values))]
-        )
-    ),
-    showlegend=False,
-)
+fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(polar=True))
 
-# Show chart in sidebar
-st.sidebar.markdown("### Your Genre Profile")
-st.sidebar.plotly_chart(fig, use_container_width=True)
+values = values_loop
+ax.plot(angles, values, linewidth=1)
+ax.fill(angles, values, alpha=0.3)
 
+ax.set_xticks(angles[:-1])
+ax.set_xticklabels(genres)
+
+st.sidebar.pyplot(fig)
 
 # ------------------- TMDB SETUP -------------------
 TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
