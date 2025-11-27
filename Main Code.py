@@ -75,15 +75,12 @@ for s in series:
 # --- CALCULATE GENRE SCORES ---
 genre_scores = {g: 0 for g in genres}
 
-for movie in selected_titles:
+for title in selected_titles:
     for g in genres:
         genre_scores[g] += title_genres[titles][g]
 
 values = [genre_scores[g] for g in genres]
-
-# Close loop for radar chart
-values_loop = values + [values[0]]
-genres_loop = genres + [genres[0]]
+values += values[:1]
 
 # --- RADAR CHART ---
 num_vars = len(genres)
