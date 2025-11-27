@@ -17,6 +17,8 @@ def goto(page_name):
 
 # ------------------- SIDE BAR ---------------------
 import plotly.graph_objects as go
+st.set_page_config(page_title="Movie Preference Radar", layout="wide")
+
 st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
 movies=["Pixels","The Conjuring", "Blade Runner 2049", "The Shawshank Redemption","John Wick","The Notebook"]
 
@@ -25,10 +27,6 @@ selected_movies = st.sidebar.multiselect(
     options=movies,
     default=[]
 )
-import streamlit as st
-import plotly.graph_objects as go
-
-st.set_page_config(page_title="Movie Preference Radar", layout="wide")
 
 genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
 
