@@ -15,6 +15,70 @@ if "page" not in st.session_state:
 def goto(page_name):
     st.session_state.page = page_name
 
+# ------------------- SIDE BAR ---------------------
+import plotly.graph_objects as go
+st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
+movies=["Pixels","The Conjuring", "Blade Runner 2049", "The Shawshank Redemption","John Wick","The Notebook"]
+
+selected_movies = st.sidebar.multiselect(
+    "Pick one or more:",
+    options=movies,
+    default=[]
+)
+import streamlit as st
+import plotly.graph_objects as go
+
+st.set_page_config(page_title="Movie Preference Radar", layout="wide")
+
+genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
+
+movie_genres = {
+    "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
+    "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
+    "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},
+    "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},
+    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 1},
+}
+
+# --- CALCULATE GENRE SCORES ---
+genre_scores = {g: 0 for g in genres}
+
+for movie in selected_movies:
+    for g in genres:
+        genre_scores[g] += movie_genres[movie][g]
+
+values = [genre_scores[g] for g in genres]
+
+# Close loop for radar chart
+values_loop = values + [values[0]]
+genres_loop = genres + [genres[0]]
+
+# --- RADAR CHART ---
+fig = go.Figure()
+
+fig.add_trace(go.Scatterpolar(
+    r=values_loop,
+    theta=genres_loop,
+    fill='toself',
+    name='Genre preference'
+))
+
+fig.update_layout(
+    polar=dict(
+        radialaxis=dict(
+            visible=True,
+            range=[0, max(1, max(values))]
+        )
+    ),
+    showlegend=False,
+)
+
+# Show chart in sidebar
+st.sidebar.markdown("### Your Genre Profile")
+st.sidebar.plotly_chart(fig, use_container_width=True)
+
+
 # ------------------- TMDB SETUP -------------------
 TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
