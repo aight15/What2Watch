@@ -22,7 +22,6 @@ def goto(page_name):
 st.set_page_config(page_title="Movie Preference Radar", layout="wide")
 
 st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
-movies=["Pixels","The Conjuring", "Blade Runner 2049", "The Shawshank Redemption","John Wick","The Notebook"]
 
 movies = [
     "Pixels",
@@ -33,13 +32,32 @@ movies = [
     "The Notebook"
 ]
 
+series = [
+    "Breaking Bad",
+    "Stranger Things",
+    "Friends",
+    "The Office",
+    "Game of Thrones",
+    "Black Mirror"
+]
+
 # store user choices
 choices = {}
 for movie in movies:
     choices[movie] = st.sidebar.checkbox(movie)
 
-# Convert to list of chosen movies
-selected_movies = [movie for movie, checked in choices.items() if checked]
+# Convert to list of chosen titles
+selected_titles = []
+
+st.sidebar.markdown("#### 🎬 Movies")
+for m in movies:
+    if st.sidebar.checkbox(m, key=f"movie_{m}"):
+        selected_titles.append(m)
+
+st.sidebar.markdown("#### 📺 Series")
+for s in series:
+    if st.sidebar.checkbox(s, key=f"series_{s}"):
+        selected_titles.append(s)
 
 
 genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
@@ -53,12 +71,20 @@ movie_genres = {
     "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 1},
 }
 
+    # --- Series ---
+    "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},
+    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
+    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 1},
+    "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 1},
+    "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},
+}
 # --- CALCULATE GENRE SCORES ---
 genre_scores = {g: 0 for g in genres}
 
-for movie in selected_movies:
+for movie in selected_titles:
     for g in genres:
-        genre_scores[g] += movie_genres[movie][g]
+        genre_scores[g] += title_genres[titles][g]
 
 values = [genre_scores[g] for g in genres]
 
@@ -75,8 +101,8 @@ angles += angles[:1]
 fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(polar=True))
 
 values = values_loop
-ax.plot(angles, values, linewidth=1)
-ax.fill(angles, values, alpha=0.3)
+ax.plot(angles, values, linewidth=2)
+ax.fill(angles, values, alpha=0.25)
 
 ax.set_xticks(angles[:-1])
 ax.set_xticklabels(genres)
