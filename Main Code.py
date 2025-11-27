@@ -19,7 +19,7 @@ def goto(page_name):
 
 # ------------------- SIDE BAR ---------------------
 
-st.set_page_config(page_title="Movie Preference Radar", layout="wide")
+st.set_page_config(page_title="Movie & Series Radar", layout="wide")
 
 st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
 
@@ -41,10 +41,23 @@ series = [
     "Black Mirror"
 ]
 
-# store user choices
-choices = {}
-for movie in movies:
-    choices[movie] = st.sidebar.checkbox(movie)
+genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
+
+titles_genres = {
+    "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
+    "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
+    "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},
+    "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},
+    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 1},
+
+    "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},
+    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
+    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 1},
+    "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 1},
+    "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},
+}
 
 # Convert to list of chosen titles
 selected_titles = []
@@ -59,26 +72,6 @@ for s in series:
     if st.sidebar.checkbox(s, key=f"series_{s}"):
         selected_titles.append(s)
 
-
-genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
-
-movie_genres = {
-    "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
-    "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
-    "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
-    "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},
-    "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},
-    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 1},
-}
-
-    # --- Series ---
-    "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},
-    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
-    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 1},
-    "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
-    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 1},
-    "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},
-}
 # --- CALCULATE GENRE SCORES ---
 genre_scores = {g: 0 for g in genres}
 
