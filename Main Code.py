@@ -1,5 +1,5 @@
 import streamlit as st
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 import requests
 
 # ------------------- PAGE SETUP -------------------
@@ -56,7 +56,7 @@ genres_loop = genres + [genres[0]]
 # --- RADAR CHART ---
 fig = go.Figure()
 
-fig.add_trace(go.Scatterpolar(
+fig.add_trace(plt.Scatterpolar(
     r=values_loop,
     theta=genres_loop,
     fill='toself',
