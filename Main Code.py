@@ -90,12 +90,12 @@ angles += angles[:1]
 
 fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(polar=True))
 
-values = values_loop
 ax.plot(angles, values, linewidth=2)
 ax.fill(angles, values, alpha=0.25)
 
 ax.set_xticks(angles[:-1])
 ax.set_xticklabels(genres)
+ax.set_rlabel_position(30)
 
 st.sidebar.pyplot(fig)
 
