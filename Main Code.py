@@ -54,7 +54,7 @@ values_loop = values + [values[0]]
 genres_loop = genres + [genres[0]]
 
 # --- RADAR CHART ---
-fig = go.Figure()
+fig = plt.Figure()
 
 fig.add_trace(plt.Scatterpolar(
     r=values_loop,
