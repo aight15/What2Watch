@@ -2,14 +2,15 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 import requests
+import random
 
 # ------------------- PAGE SETUP -------------------
-st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
+st.set_page_config(page_title="What2Watch", page_icon="🎬")
 
 # ------------------- LOGO AND TITLE -------------------
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.image("logo.jpg", width=700)
+    st.title("What2Watch")
 
 if "page" not in st.session_state:
     st.session_state.page = "step1"
@@ -18,8 +19,6 @@ def goto(page_name):
     st.session_state.page = page_name
 
 # ------------------- SIDE BAR ---------------------
-
-st.set_page_config(page_title="Movie & Series Radar", layout="wide")
 
 st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
 
@@ -109,14 +108,14 @@ GENRE_MAP = {
     "Animation": 16, "Mystery": 9648, "Thriller": 53
 }
 
-def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=None):
+def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=None, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     url = f"{TMDB_BASE_URL}/discover/movie"
     params = {
         "api_key": TMDB_API_KEY,
         "with_genres": genre_id,
-        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.asc",
+        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",
         "language": "en-US",
-        "vote_count.gte": 100 if popularity_type == "popular" else 10
+        "vote_count.gte": 100 if popularity_type == "popular" else 50
     }
 
     if animation_filter == "Animated":
@@ -124,12 +123,52 @@ def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=No
     elif animation_filter == "Live-action":
         params["without_genres"] = "16"
 
+    if runtime_min:
+        params["with_runtime.gte"] = runtime_min
+    if runtime_max:
+        params["with_runtime.lte"] = runtime_max
+    
+    if year_min:
+        params["primary_release_date.gte"] = f"{year_min}-01-01"
+    if year_max:
+        params["primary_release_date.lte"] = f"{year_max}-12-31"
+
     response = requests.get(url, params=params)
     if response.status_code == 200:
-        return response.json().get("results", [])[:5]
+        return response.json().get("results", [])[:num_results]
     return []
 
-def get_movies_by_actor_or_director(name):
+def get_series_by_genre(genre_id, popularity_type="popular", animation_filter=None, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
+    url = f"{TMDB_BASE_URL}/discover/tv"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",
+        "language": "en-US",
+        "vote_count.gte": 100 if popularity_type == "popular" else 50
+    }
+
+    if animation_filter == "Animated":
+        params["with_genres"] = f"{genre_id},16"
+    elif animation_filter == "Live-action":
+        params["without_genres"] = "16"
+
+    if episode_runtime_min:
+        params["with_runtime.gte"] = episode_runtime_min
+    if episode_runtime_max:
+        params["with_runtime.lte"] = episode_runtime_max
+    
+    if year_min:
+        params["first_air_date.gte"] = f"{year_min}-01-01"
+    if year_max:
+        params["first_air_date.lte"] = f"{year_max}-12-31"
+
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:num_results]
+    return []
+
+def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     search_url = f"{TMDB_BASE_URL}/search/person"
     search_params = {
         "api_key": TMDB_API_KEY,
@@ -147,9 +186,52 @@ def get_movies_by_actor_or_director(name):
             "vote_count.gte": 50,
             "language": "en-US"
         }
+        
+        if runtime_min:
+            discover_params["with_runtime.gte"] = runtime_min
+        if runtime_max:
+            discover_params["with_runtime.lte"] = runtime_max
+        if year_min:
+            discover_params["primary_release_date.gte"] = f"{year_min}-01-01"
+        if year_max:
+            discover_params["primary_release_date.lte"] = f"{year_max}-12-31"
+        
         movie_response = requests.get(discover_url, params=discover_params)
         if movie_response.status_code == 200:
-            return movie_response.json().get("results", [])[:5]
+            return movie_response.json().get("results", [])[:num_results]
+    return []
+
+def get_series_by_actor(name, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
+    search_url = f"{TMDB_BASE_URL}/search/person"
+    search_params = {
+        "api_key": TMDB_API_KEY,
+        "query": name,
+        "language": "en-US"
+    }
+    response = requests.get(search_url, params=search_params)
+    if response.status_code == 200 and response.json()["results"]:
+        person_id = response.json()["results"][0]["id"]
+        discover_url = f"{TMDB_BASE_URL}/discover/tv"
+        discover_params = {
+            "api_key": TMDB_API_KEY,
+            "with_cast": person_id,
+            "sort_by": "popularity.desc",
+            "vote_count.gte": 50,
+            "language": "en-US"
+        }
+        
+        if episode_runtime_min:
+            discover_params["with_runtime.gte"] = episode_runtime_min
+        if episode_runtime_max:
+            discover_params["with_runtime.lte"] = episode_runtime_max
+        if year_min:
+            discover_params["first_air_date.gte"] = f"{year_min}-01-01"
+        if year_max:
+            discover_params["first_air_date.lte"] = f"{year_max}-12-31"
+        
+        series_response = requests.get(discover_url, params=discover_params)
+        if series_response.status_code == 200:
+            return series_response.json().get("results", [])[:num_results]
     return []
 
 def get_ryan_gosling_movies():
@@ -173,13 +255,28 @@ def get_ryan_gosling_movies():
         movie_response = requests.get(movie_url, params=movie_params)
         if movie_response.status_code == 200:
             movies = movie_response.json().get("results", [])
-            # sort by IMDb-style score
             sorted_movies = sorted(movies, key=lambda x: x.get("vote_average", 0), reverse=True)
-            return sorted_movies[:10]  # always 10
+            return sorted_movies[:10]
     return []
 
-def get_trailer(movie_id):
-    url = f"{TMDB_BASE_URL}/movie/{movie_id}/videos"
+def get_random_movie():
+    """Get a truly random popular movie"""
+    random_page = random.randint(1, 50)
+    url = f"{TMDB_BASE_URL}/movie/popular"
+    params = {
+        "api_key": TMDB_API_KEY,
+        "language": "en-US",
+        "page": random_page
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        results = response.json().get("results", [])
+        if results:
+            return random.choice(results)
+    return None
+
+def get_trailer(content_id, content_type="movie"):
+    url = f"{TMDB_BASE_URL}/{content_type}/{content_id}/videos"
     params = {
         "api_key": TMDB_API_KEY,
         "language": "en-US"
@@ -195,41 +292,36 @@ def get_trailer(movie_id):
 if "preferences" not in st.session_state:
     st.session_state.preferences = {}
 
-def ryan_gosling_button():
-    with st.container():
-        col1, col2 = st.columns([5, 2])
-        with col2:
-            st.markdown("""
-                <style>
-                .element-container button {
-                    width: 100% !important;
-                    white-space: nowrap;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-            if st.button("Ryan Gosling Movies", key="gosling_btn"):
-                goto("gosling")
+def special_buttons():
+    """Display Random Movie and Ryan Gosling buttons symmetrically"""
+    col1, col2, col3 = st.columns([2, 3, 2])
+    with col1:
+        if st.button("Random Movie", key="random_btn", use_container_width=True):
+            goto("random")
+    with col3:
+        if st.button("Ryan Gosling", key="gosling_btn", use_container_width=True):
+            goto("gosling")
 
 # ------------------- STEP 1 -------------------
 if st.session_state.page == "step1":
-    ryan_gosling_button()
+    special_buttons()
     st.title("What2Watch")
     with st.form("step1_form"):
         content_type = st.radio("Do you want to watch a movie, series, or both?", ["Film", "Series", "Both"])
-        next_button = st.form_submit_button("Next ➡️")
+        next_button = st.form_submit_button("Next")
     if next_button:
         st.session_state.preferences["content_type"] = content_type
         goto("step2")
 
 # ------------------- STEP 2 -------------------
 elif st.session_state.page == "step2":
-    ryan_gosling_button()
+    special_buttons()
     with st.form("step2_form"):
         content_type = st.session_state.preferences.get("content_type", "Film")
         if content_type == "Film":
-            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)"])
+            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)", "Any length"])
         elif content_type == "Series":
-            length = st.radio("Preferred series length:", ["< 30 min", "30–60 min", "60+ min"])
+            length = st.radio("Preferred episode length:", ["< 30 min", "30–60 min", "60+ min", "Any length"])
         else:
             length = st.radio("Preferred duration:", [
                 "Short Movie (< 90 min)",
@@ -237,7 +329,8 @@ elif st.session_state.page == "step2":
                 "Long Movie (> 120 min)",
                 "Short Episode (< 30 min)",
                 "Standard Episode (30–60 min)",
-                "Long Episode (> 60 min)"
+                "Long Episode (> 60 min)",
+                "Any length"
             ])
 
         streaming_services_options = ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
@@ -249,9 +342,9 @@ elif st.session_state.page == "step2":
 
         col1, col2 = st.columns(2)
         with col1:
-            back_button = st.form_submit_button("⬅️ Back")
+            back_button = st.form_submit_button("Back")
         with col2:
-            next_button = st.form_submit_button("Next ➡️")
+            next_button = st.form_submit_button("Next")
 
     if next_button:
         st.session_state.preferences["length"] = length
@@ -262,23 +355,26 @@ elif st.session_state.page == "step2":
 
 # ------------------- STEP 3 -------------------
 elif st.session_state.page == "step3":
-    ryan_gosling_button()
+    special_buttons()
     with st.form("step3_form"):
+        content_type = st.session_state.preferences.get("content_type", "Film")
+        
+        # Show animation preference for all content types
         animation_preference = st.radio("Would you prefer animated or live-action?", ["Animated", "Live-action", "Both"])
-        modern_or_classic = st.radio("Modern or classic?", ["Modern", "Classic", "Doesn't matter"])
+        
+        modern_or_classic = st.radio("Modern or classic?", ["Modern (2010+)", "Classic (before 2010)", "Doesn't matter"])
         watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
         genre_choice = st.multiselect("Which genre are you interested in?", options=list(GENRE_MAP.keys()))
         popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])
 
-        actor_or_director = ""
-        if animation_preference != "Animated":
-            actor_or_director = st.text_input("Any actors or directors you love?")
+        # Always show the actor/director field
+        actor_or_director = st.text_input("Any actors or directors you love? (optional)")
 
         col1, col2 = st.columns(2)
         with col1:
-            back_button = st.form_submit_button("⬅️ Back")
+            back_button = st.form_submit_button("Back")
         with col2:
-            next_button = st.form_submit_button("Next ➡️")
+            next_button = st.form_submit_button("Next")
 
     if next_button:
         st.session_state.preferences.update({
@@ -296,69 +392,217 @@ elif st.session_state.page == "step3":
 # ------------------- RESULTS -------------------
 elif st.session_state.page == "results":
     prefs = st.session_state.preferences
+    content_type = prefs.get("content_type", "Film")
+    
     if not prefs.get("genres"):
-        st.warning("Please select at least one genre.")
+        st.warning("Please go back and select at least one genre.")
     else:
-        st.subheader("Recommended Movies:")
-        for genre in prefs["genres"]:
-            genre_id = GENRE_MAP.get(genre)
-            if genre_id:
-                movies = get_movies_by_genre(
-                    genre_id,
-                    popularity_type="popular" if prefs["popularity_type"] == "Popular & trending" else "underrated",
-                    animation_filter=prefs.get("animation_preference")
-                )
-                if movies:
-                    st.markdown(f"### 🎞️ {genre}")
-                    for movie in movies:
-                        title = movie.get("title")
-                        overview = movie.get("overview", "No description available.")
-                        poster_path = movie.get("poster_path")
-                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
-                        imdb_score = movie.get("vote_average")
-                        movie_id = movie.get("id")
-                        trailer_url = get_trailer(movie_id)
+        # Parse length preferences for runtime filtering
+        runtime_min, runtime_max = None, None
+        episode_runtime_min, episode_runtime_max = None, None
+        
+        length = prefs.get("length", "")
+        
+        if "Short (< 90 min)" in length or "Short Movie" in length:
+            runtime_max = 90
+        elif "Medium (90–120 min)" in length or "Medium Movie" in length:
+            runtime_min, runtime_max = 90, 120
+        elif "Long (> 120 min)" in length or "Long Movie" in length:
+            runtime_min = 120
+        elif "< 30 min" in length or "Short Episode" in length:
+            episode_runtime_max = 30
+        elif "30–60 min" in length or "Standard Episode" in length:
+            episode_runtime_min, episode_runtime_max = 30, 60
+        elif "60+ min" in length or "Long Episode" in length:
+            episode_runtime_min = 60
+        
+        # Parse year preferences
+        year_min, year_max = None, None
+        modern_or_classic = prefs.get("modern_or_classic", "Doesn't matter")
+        if modern_or_classic == "Modern (2010+)":
+            year_min = 2010
+        elif modern_or_classic == "Classic (before 2010)":
+            year_max = 2009
+        
+        # Determine popularity
+        pop_type = "popular" if prefs["popularity_type"] == "Popular & trending" else "underrated"
+        
+        # Show Movies
+        if content_type in ["Film", "Both"]:
+            st.subheader("Recommended Movies:")
+            for genre in prefs["genres"]:
+                genre_id = GENRE_MAP.get(genre)
+                if genre_id:
+                    movies = get_movies_by_genre(
+                        genre_id,
+                        popularity_type=pop_type,
+                        animation_filter=prefs.get("animation_preference"),
+                        runtime_min=runtime_min,
+                        runtime_max=runtime_max,
+                        year_min=year_min,
+                        year_max=year_max,
+                        num_results=10
+                    )
+                    if movies:
+                        st.markdown(f"### 🎞️ {genre}")
+                        for movie in movies:
+                            title = movie.get("title")
+                            overview = movie.get("overview", "No description available.")
+                            poster_path = movie.get("poster_path")
+                            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                            imdb_score = movie.get("vote_average")
+                            movie_id = movie.get("id")
+                            release_year = movie.get("release_date", "")[:4]
+                            trailer_url = get_trailer(movie_id, "movie")
 
-                        st.markdown(f"**{title}**")
-                        if poster_url:
-                            st.image(poster_url, width=150)
-                        st.markdown(f"**IMDb Score:** ⭐ {imdb_score}")
-                        st.caption(overview)
-                        if trailer_url:
-                            st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
-                        st.markdown("---")
+                            st.markdown(f"**{title}** ({release_year})")
+                            if poster_url:
+                                st.image(poster_url, width=150)
+                            st.markdown(f"**IMDb Score:**{imdb_score}")
+                            st.caption(overview)
+                            if trailer_url:
+                                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                            st.markdown("---")
+        
+        # Show Series
+        if content_type in ["Series", "Both"]:
+            st.subheader("Recommended Series:")
+            for genre in prefs["genres"]:
+                genre_id = GENRE_MAP.get(genre)
+                if genre_id:
+                    series_list = get_series_by_genre(
+                        genre_id,
+                        popularity_type=pop_type,
+                        animation_filter=prefs.get("animation_preference"),
+                        episode_runtime_min=episode_runtime_min,
+                        episode_runtime_max=episode_runtime_max,
+                        year_min=year_min,
+                        year_max=year_max,
+                        num_results=10
+                    )
+                    if series_list:
+                        st.markdown(f"### 📺 {genre}")
+                        for series in series_list:
+                            title = series.get("name")
+                            overview = series.get("overview", "No description available.")
+                            poster_path = series.get("poster_path")
+                            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                            imdb_score = series.get("vote_average")
+                            series_id = series.get("id")
+                            first_air_year = series.get("first_air_date", "")[:4]
+                            trailer_url = get_trailer(series_id, "tv")
 
+                            st.markdown(f"**{title}** ({first_air_year})")
+                            if poster_url:
+                                st.image(poster_url, width=150)
+                            st.markdown(f"**IMDb Score:**{imdb_score}")
+                            st.caption(overview)
+                            if trailer_url:
+                                st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                            st.markdown("---")
+
+        # Show content by favorite actor/director
         if prefs.get("favorite_person"):
-            st.subheader(f"🎭 Movies featuring **{prefs['favorite_person']}**:")
-            person_movies = get_movies_by_actor_or_director(prefs["favorite_person"])
-            for movie in person_movies:
-                title = movie.get("title")
-                overview = movie.get("overview", "No description available.")
-                poster_path = movie.get("poster_path")
-                poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
-                imdb_score = movie.get("vote_average")
-                movie_id = movie.get("id")
-                trailer_url = get_trailer(movie_id)
+            if content_type in ["Film", "Both"]:
+                st.subheader(f"Movies featuring **{prefs['favorite_person']}**:")
+                person_movies = get_movies_by_actor_or_director(
+                    prefs["favorite_person"],
+                    runtime_min=runtime_min,
+                    runtime_max=runtime_max,
+                    year_min=year_min,
+                    year_max=year_max,
+                    num_results=10
+                )
+                for movie in person_movies:
+                    title = movie.get("title")
+                    overview = movie.get("overview", "No description available.")
+                    poster_path = movie.get("poster_path")
+                    poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                    imdb_score = movie.get("vote_average")
+                    movie_id = movie.get("id")
+                    release_year = movie.get("release_date", "")[:4]
+                    trailer_url = get_trailer(movie_id, "movie")
 
-                st.markdown(f"**{title}**")
-                if poster_url:
-                    st.image(poster_url, width=150)
-                st.markdown(f"**IMDb Score:** ⭐ {imdb_score}")
-                st.caption(overview)
-                if trailer_url:
-                    st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
-                st.markdown("---")
+                    st.markdown(f"**{title}** ({release_year})")
+                    if poster_url:
+                        st.image(poster_url, width=150)
+                    st.markdown(f"**IMDb Score:**{imdb_score}")
+                    st.caption(overview)
+                    if trailer_url:
+                        st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                    st.markdown("---")
+            
+            if content_type in ["Series", "Both"]:
+                st.subheader(f"Series featuring **{prefs['favorite_person']}**:")
+                person_series = get_series_by_actor(
+                    prefs["favorite_person"],
+                    episode_runtime_min=episode_runtime_min,
+                    episode_runtime_max=episode_runtime_max,
+                    year_min=year_min,
+                    year_max=year_max,
+                    num_results=10
+                )
+                for series in person_series:
+                    title = series.get("name")
+                    overview = series.get("overview", "No description available.")
+                    poster_path = series.get("poster_path")
+                    poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                    imdb_score = series.get("vote_average")
+                    series_id = series.get("id")
+                    first_air_year = series.get("first_air_date", "")[:4]
+                    trailer_url = get_trailer(series_id, "tv")
+
+                    st.markdown(f"**{title}** ({first_air_year})")
+                    if poster_url:
+                        st.image(poster_url, width=150)
+                    st.markdown(f"**IMDb Score:**{imdb_score}")
+                    st.caption(overview)
+                    if trailer_url:
+                        st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                    st.markdown("---")
         
         st.write("")  
         if st.button("Start Over"):
             goto("step1")
+
+# ------------------- RANDOM MOVIE MODE -------------------
+elif st.session_state.page == "random":
+    st.title("Random Movie Generator")
+    
+    if st.button("Give me another random movie!"):
+        st.rerun()
+    
+    random_movie = get_random_movie()
+    if random_movie:
+        title = random_movie.get("title")
+        rating = random_movie.get("vote_average")
+        overview = random_movie.get("overview", "No description available.")
+        poster_path = random_movie.get("poster_path")
+        poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+        movie_id = random_movie.get("id")
+        release_year = random_movie.get("release_date", "")[:4]
+        trailer_url = get_trailer(movie_id, "movie")
+
+        st.markdown(f"## {title} ({release_year})")
+        if poster_url:
+            st.image(poster_url, width=300)
+        st.markdown(f"### **IMDb Score:**{rating}")
+        st.markdown(f"**Overview:** {overview}")
+        if trailer_url:
+            st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+    else:
+        st.warning("Could not fetch a random movie. Try again!")
+
+    st.write("")  
+    if st.button("← Back to Start"):
+        goto("step1")
 
 # ------------------- RYAN GOSLING MODE -------------------
 elif st.session_state.page == "gosling":
     st.title("Ryan Gosling Recommendations")
     gosling_movies = get_ryan_gosling_movies()
     if gosling_movies:
-        st.markdown("⭐ Sorted by IMDb Score (Highest First)")
+        st.markdown("Sorted by IMDb Score (Highest First)")
         for movie in gosling_movies:
             title = movie.get("title")
             rating = movie.get("vote_average")
@@ -366,12 +610,13 @@ elif st.session_state.page == "gosling":
             poster_path = movie.get("poster_path")
             poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
             movie_id = movie.get("id")
-            trailer_url = get_trailer(movie_id)
+            release_year = movie.get("release_date", "")[:4]
+            trailer_url = get_trailer(movie_id, "movie")
 
-            st.markdown(f"**{title}**")
+            st.markdown(f"**{title}** ({release_year})")
             if poster_url:
                 st.image(poster_url, width=150)
-            st.markdown(f"**IMDb Score:** ⭐ {rating}")
+            st.markdown(f"**IMDb Score:**{rating}")
             st.caption(overview)
             if trailer_url:
                 st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
@@ -380,5 +625,5 @@ elif st.session_state.page == "gosling":
         st.warning("No Ryan Gosling movies found.")
 
     st.write("")  
-    if st.button("Start Over"):
+    if st.button("← Back to Start"):
         goto("step1")
