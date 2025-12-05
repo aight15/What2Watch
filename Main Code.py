@@ -61,12 +61,12 @@ title_genres = {
 # Convert to list of chosen titles
 selected_titles = []
 
-st.sidebar.markdown("#### 🎬 Movies")
+st.sidebar.markdown("#### Movies")
 for m in movies:
     if st.sidebar.checkbox(m, key=f"movie_{m}"):
         selected_titles.append(m)
 
-st.sidebar.markdown("#### 📺 Series")
+st.sidebar.markdown("#### Series")
 for s in series:
     if st.sidebar.checkbox(s, key=f"series_{s}"):
         selected_titles.append(s)
@@ -444,7 +444,7 @@ elif st.session_state.page == "results":
                         num_results=10
                     )
                     if movies:
-                        st.markdown(f"### 🎞️ {genre}")
+                        st.markdown(f"### {genre}")
                         for movie in movies:
                             title = movie.get("title")
                             overview = movie.get("overview", "No description available.")
@@ -458,7 +458,7 @@ elif st.session_state.page == "results":
                             st.markdown(f"**{title}** ({release_year})")
                             if poster_url:
                                 st.image(poster_url, width=150)
-                            st.markdown(f"**IMDb Score:**{imdb_score}")
+                            st.markdown(f"IMDb Score: {imdb_score}")
                             st.caption(overview)
                             if trailer_url:
                                 st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
@@ -481,7 +481,7 @@ elif st.session_state.page == "results":
                         num_results=10
                     )
                     if series_list:
-                        st.markdown(f"### 📺 {genre}")
+                        st.markdown(f"### {genre}")
                         for series in series_list:
                             title = series.get("name")
                             overview = series.get("overview", "No description available.")
@@ -495,7 +495,7 @@ elif st.session_state.page == "results":
                             st.markdown(f"**{title}** ({first_air_year})")
                             if poster_url:
                                 st.image(poster_url, width=150)
-                            st.markdown(f"**IMDb Score:**{imdb_score}")
+                            st.markdown(f"IMDb Score: {imdb_score}")
                             st.caption(overview)
                             if trailer_url:
                                 st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
@@ -526,7 +526,7 @@ elif st.session_state.page == "results":
                     st.markdown(f"**{title}** ({release_year})")
                     if poster_url:
                         st.image(poster_url, width=150)
-                    st.markdown(f"**IMDb Score:**{imdb_score}")
+                    st.markdown(f"IMDb Score: {imdb_score}")
                     st.caption(overview)
                     if trailer_url:
                         st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
@@ -555,7 +555,7 @@ elif st.session_state.page == "results":
                     st.markdown(f"**{title}** ({first_air_year})")
                     if poster_url:
                         st.image(poster_url, width=150)
-                    st.markdown(f"**IMDb Score:**{imdb_score}")
+                    st.markdown(f"IMDb Score: {imdb_score}")
                     st.caption(overview)
                     if trailer_url:
                         st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
@@ -586,8 +586,8 @@ elif st.session_state.page == "random":
         st.markdown(f"## {title} ({release_year})")
         if poster_url:
             st.image(poster_url, width=300)
-        st.markdown(f"### **IMDb Score:**{rating}")
-        st.markdown(f"**Overview:** {overview}")
+        st.markdown(f"### IMDb Score: {rating}")
+        st.markdown(f"Overview: {overview}")
         if trailer_url:
             st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)
     else:
@@ -616,7 +616,7 @@ elif st.session_state.page == "gosling":
             st.markdown(f"**{title}** ({release_year})")
             if poster_url:
                 st.image(poster_url, width=150)
-            st.markdown(f"**IMDb Score:**{rating}")
+            st.markdown(f"IMDb Score: {rating}")
             st.caption(overview)
             if trailer_url:
                 st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
