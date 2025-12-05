@@ -5,7 +5,7 @@ import requests
 import random
 
 # ------------------- PAGE SETUP -------------------
-st.set_page_config(page_title="What2Watch", page_icon="🎬")
+st.set_page_config(page_title="What2Watch")
 
 # ------------------- LOGO AND TITLE -------------------
 col1, col2, col3 = st.columns([1, 2, 1])
@@ -498,7 +498,7 @@ elif st.session_state.page == "results":
                             st.markdown(f"**IMDb Score:**{imdb_score}")
                             st.caption(overview)
                             if trailer_url:
-                                st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
                             st.markdown("---")
 
         # Show content by favorite actor/director
@@ -619,7 +619,7 @@ elif st.session_state.page == "gosling":
             st.markdown(f"**IMDb Score:**{rating}")
             st.caption(overview)
             if trailer_url:
-                st.markdown(f"[🎬 Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
             st.markdown("---")
     else:
         st.warning("No Ryan Gosling movies found.")
