@@ -292,6 +292,102 @@ def get_trailer(content_id, content_type="movie"):
 if "preferences" not in st.session_state:
     st.session_state.preferences = {}
 
+# ------------------- MACHINE LEARNING COMPONENT -------------------
+def load_liked_movies():
+    """Load user's liked movies from JSON file"""
+    try:
+        if Path("liked_movies.json").exists():
+            with open("liked_movies.json", "r") as f:
+                data = json.load(f)
+                # Filter out invalid entries (strings, etc.)
+                return [m for m in data if isinstance(m, dict) and "id" in m and m.get("liked") == True]
+        return []
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def save_liked_movie(movie_id, title, genres, rating, liked=True):
+    """Save a liked/disliked movie to the JSON file"""
+    try:
+        if Path("liked_movies.json").exists():
+            with open("liked_movies.json", "r") as f:
+                data = json.load(f)
+                # Filter out invalid entries
+                data = [m for m in data if isinstance(m, dict) and "id" in m]
+        else:
+            data = []
+        
+        # Remove existing entry for this movie if present
+        data = [m for m in data if m.get("id") != movie_id]
+        
+        # Add new entry
+        data.append({
+            "id": movie_id,
+            "title": title,
+            "genres": genres,
+            "rating": rating,
+            "liked": liked
+        })
+        
+        with open("liked_movies.json", "w") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        st.error(f"Error saving preference: {e}")
+
+def create_movie_feature_vector(movie):
+    """Create a feature vector for a movie based on genres, rating, and popularity"""
+    # Get all possible genre IDs from GENRE_MAP
+    all_genre_ids = list(GENRE_MAP.values())
+    
+    # Create genre vector (binary: 1 if movie has genre, 0 otherwise)
+    movie_genres = movie.get("genre_ids", [])
+    genre_vector = [1 if genre_id in movie_genres else 0 for genre_id in all_genre_ids]
+    
+    # Normalize rating (0-10 scale, normalize to 0-1)
+    rating = movie.get("vote_average", 5.0) / 10.0
+    
+    # Normalize popularity (using a simple log transform to reduce scale)
+    popularity = movie.get("popularity", 0)
+    popularity_normalized = np.log1p(popularity) / 20.0  # Rough normalization
+    
+    # Combine all features
+    feature_vector = genre_vector + [rating, popularity_normalized]
+    return np.array(feature_vector)
+
+def reorder_movies_by_preference(movies, liked_movies_list):
+    """Re-order movies based on similarity to user's liked movies using cosine similarity"""
+    if not liked_movies_list or not movies:
+        return movies
+    
+    # Create feature vectors for liked movies
+    liked_vectors = []
+    for liked_movie in liked_movies_list:
+        # Reconstruct movie dict from saved data
+        movie_dict = {
+            "genre_ids": liked_movie.get("genres", []),
+            "vote_average": liked_movie.get("rating", 5.0),
+            "popularity": 50.0  # Default popularity if not stored
+        }
+        liked_vectors.append(create_movie_feature_vector(movie_dict))
+    
+    if not liked_vectors:
+        return movies
+    
+    # Average the liked movie vectors to create a user preference profile
+    user_profile = np.mean(liked_vectors, axis=0)
+    
+    # Calculate similarity scores for candidate movies
+    movie_scores = []
+    for movie in movies:
+        movie_vector = create_movie_feature_vector(movie)
+        # Calculate cosine similarity
+        similarity = cosine_similarity([user_profile], [movie_vector])[0][0]
+        movie_scores.append((movie, similarity))
+    
+    # Sort by similarity (highest first)
+    movie_scores.sort(key=lambda x: x[1], reverse=True)
+    
+    # Return reordered movies
+    return [movie for movie, score in movie_scores]
 # Displays centered/symetrical buttons in Streamlit to navigate to Random Movie or Ryan Gosling pages
 def special_buttons():
     col1, col2, col3 = st.columns([2, 3, 2])
