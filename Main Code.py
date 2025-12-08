@@ -288,9 +288,6 @@ def get_trailer(content_id, content_type="movie"):
                 return f"https://www.youtube.com/watch?v={video['key']}"
     return None
 
-# Initializes an empty preferences dictionary in Streamlit session state if it doesn't exist
-if "preferences" not in st.session_state:
-    st.session_state.preferences = {}
 
 # ------------------- MACHINE LEARNING COMPONENT -------------------
 def load_liked_movies():
@@ -388,6 +385,11 @@ def reorder_movies_by_preference(movies, liked_movies_list):
     
     # Return reordered movies
     return [movie for movie, score in movie_scores]
+
+# Initializes an empty preferences dictionary in Streamlit session state if it doesn't exist
+if "preferences" not in st.session_state:
+    st.session_state.preferences = {}
+
 # Displays centered/symetrical buttons in Streamlit to navigate to Random Movie or Ryan Gosling pages
 def special_buttons():
     col1, col2, col3 = st.columns([2, 3, 2])
