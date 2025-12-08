@@ -108,6 +108,7 @@ GENRE_MAP = {
     "Animation": 16, "Mystery": 9648, "Thriller": 53
 }
 
+# Fetches movies from TMDB by genre with optional filters for popularity, animation, runtime and release year
 def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=None, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     url = f"{TMDB_BASE_URL}/discover/movie"
     params = {
@@ -138,6 +139,7 @@ def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=No
         return response.json().get("results", [])[:num_results]
     return []
 
+# Fetches TV series from TMDB by genre with optional filters for popularity, animation, runtime and air date
 def get_series_by_genre(genre_id, popularity_type="popular", animation_filter=None, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     url = f"{TMDB_BASE_URL}/discover/tv"
     params = {
@@ -168,6 +170,7 @@ def get_series_by_genre(genre_id, popularity_type="popular", animation_filter=No
         return response.json().get("results", [])[:num_results]
     return []
 
+# Fetches movies from TMDB featuring or directed by a person, with optional filters for runtime and release year
 def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     search_url = f"{TMDB_BASE_URL}/search/person"
     search_params = {
@@ -201,6 +204,7 @@ def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, ye
             return movie_response.json().get("results", [])[:num_results]
     return []
 
+# Fetches TV series from TMDB featuring a given actor, with optional filters for episode runtime and first air date
 def get_series_by_actor(name, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     search_url = f"{TMDB_BASE_URL}/search/person"
     search_params = {
@@ -234,6 +238,7 @@ def get_series_by_actor(name, episode_runtime_min=None, episode_runtime_max=None
             return series_response.json().get("results", [])[:num_results]
     return []
 
+# Fetches the top 10 highest-rated Ryan Gosling movies from TMDB, sorted by average vote
 def get_ryan_gosling_movies():
     search_url = f"{TMDB_BASE_URL}/search/person"
     search_params = {
@@ -259,6 +264,7 @@ def get_ryan_gosling_movies():
             return sorted_movies[:10]
     return []
 
+# Fetches a random popular movie from TMDB by selecting a random results page and movie
 def get_random_movie():
     """Get a truly random popular movie"""
     random_page = random.randint(1, 50)
@@ -275,6 +281,7 @@ def get_random_movie():
             return random.choice(results)
     return None
 
+# Fetches the YouTube trailer URL for a given movie or TV show from TMDB
 def get_trailer(content_id, content_type="movie"):
     url = f"{TMDB_BASE_URL}/{content_type}/{content_id}/videos"
     params = {
@@ -289,11 +296,12 @@ def get_trailer(content_id, content_type="movie"):
                 return f"https://www.youtube.com/watch?v={video['key']}"
     return None
 
+# Initializes an empty preferences dictionary in Streamlit session state if it doesn't exist
 if "preferences" not in st.session_state:
     st.session_state.preferences = {}
 
+# Displays centered/symetrical buttons in Streamlit to navigate to Random Movie or Ryan Gosling pages
 def special_buttons():
-    """Display Random Movie and Ryan Gosling buttons symmetrically"""
     col1, col2, col3 = st.columns([2, 3, 2])
     with col1:
         if st.button("Random Movie", key="random_btn", use_container_width=True):
@@ -303,6 +311,7 @@ def special_buttons():
             goto("gosling")
 
 # ------------------- STEP 1 -------------------
+# Step 1 of the form: asks user for content type and stores it before moving to step 2
 if st.session_state.page == "step1":
     special_buttons()
     st.title("What2Watch")
@@ -314,6 +323,7 @@ if st.session_state.page == "step1":
         goto("step2")
 
 # ------------------- STEP 2 -------------------
+# Step 2 of the form: collects user's preferred content length and streaming services, with navigation controls
 elif st.session_state.page == "step2":
     special_buttons()
     with st.form("step2_form"):
@@ -354,6 +364,7 @@ elif st.session_state.page == "step2":
         goto("step1")
 
 # ------------------- STEP 3 -------------------
+# Step 3 of the form: gathers detailed user preferences like genre, tone and favorite people before showing results
 elif st.session_state.page == "step3":
     special_buttons()
     with st.form("step3_form"):
@@ -566,6 +577,7 @@ elif st.session_state.page == "results":
             goto("step1")
 
 # ------------------- RANDOM MOVIE MODE -------------------
+# Displays a random movie with its details and trailer, with options to refresh or return to the start
 elif st.session_state.page == "random":
     st.title("Random Movie Generator")
     
@@ -598,6 +610,7 @@ elif st.session_state.page == "random":
         goto("step1")
 
 # ------------------- RYAN GOSLING MODE -------------------
+# Displays a list of Ryan Gosling's highest-rated movies with posters, overviews and trailers
 elif st.session_state.page == "gosling":
     st.title("Ryan Gosling Recommendations")
     gosling_movies = get_ryan_gosling_movies()
