@@ -299,7 +299,7 @@ def special_buttons():
         if st.button("🎲 Random Movie", key="random_btn", use_container_width=True):
             goto("random")
     with col3:
-        if st.button("🌟 Ryan Gosling", key="gosling_btn", use_container_width=True):
+        if st.button("Ryan Gosling", key="gosling_btn", use_container_width=True):
             goto("gosling")
 
 # ------------------- STEP 1 -------------------
