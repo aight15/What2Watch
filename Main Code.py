@@ -5,16 +5,17 @@ import requests
 import random
 
 # ------------------- PAGE SETUP -------------------
-st.set_page_config(page_title="What2Watch")
+st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
 
 # ------------------- LOGO AND TITLE -------------------
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    st.title("What2Watch")
+    st.image("logo.jpg", width=700)
 
 if "page" not in st.session_state:
     st.session_state.page = "step1"
 
+# ------------------- PAGE NAVIGATION -------------------
 def goto(page_name):
     st.session_state.page = page_name
 
@@ -139,7 +140,8 @@ def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=No
         return response.json().get("results", [])[:num_results]
     return []
 
-# Fetches TV series from TMDB by genre with optional filters for popularity, animation, runtime and air date
+# Fetches TV series from TMDB by genre with optional filters for popularity, animation and air date
+# NOTE: Runtime filters removed as they don't work reliably with TMDB's TV API
 def get_series_by_genre(genre_id, popularity_type="popular", animation_filter=None, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     url = f"{TMDB_BASE_URL}/discover/tv"
     params = {
@@ -147,18 +149,13 @@ def get_series_by_genre(genre_id, popularity_type="popular", animation_filter=No
         "with_genres": genre_id,
         "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",
         "language": "en-US",
-        "vote_count.gte": 100 if popularity_type == "popular" else 50
+        "vote_count.gte": 50
     }
 
     if animation_filter == "Animated":
         params["with_genres"] = f"{genre_id},16"
     elif animation_filter == "Live-action":
         params["without_genres"] = "16"
-
-    if episode_runtime_min:
-        params["with_runtime.gte"] = episode_runtime_min
-    if episode_runtime_max:
-        params["with_runtime.lte"] = episode_runtime_max
     
     if year_min:
         params["first_air_date.gte"] = f"{year_min}-01-01"
@@ -204,7 +201,7 @@ def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, ye
             return movie_response.json().get("results", [])[:num_results]
     return []
 
-# Fetches TV series from TMDB featuring a given actor, with optional filters for episode runtime and first air date
+# Fetches TV series from TMDB featuring a given actor, with optional filters for first air date
 def get_series_by_actor(name, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     search_url = f"{TMDB_BASE_URL}/search/person"
     search_params = {
@@ -220,14 +217,10 @@ def get_series_by_actor(name, episode_runtime_min=None, episode_runtime_max=None
             "api_key": TMDB_API_KEY,
             "with_cast": person_id,
             "sort_by": "popularity.desc",
-            "vote_count.gte": 50,
+            "vote_count.gte": 30,
             "language": "en-US"
         }
         
-        if episode_runtime_min:
-            discover_params["with_runtime.gte"] = episode_runtime_min
-        if episode_runtime_max:
-            discover_params["with_runtime.lte"] = episode_runtime_max
         if year_min:
             discover_params["first_air_date.gte"] = f"{year_min}-01-01"
         if year_max:
