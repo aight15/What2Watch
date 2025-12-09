@@ -416,11 +416,13 @@ if st.session_state.page == "step1":
         goto("step2")
 
 # ------------------- STEP 2 -------------------
-# Step 2 of the form: collects user's preferred content length and streaming services, with navigation controls
+# Step 2 of the form: collects all user preferences including length, animation, modern/classic, genre, popularity, and actor/director
 elif st.session_state.page == "step2":
     special_buttons()
     with st.form("step2_form"):
         content_type = st.session_state.preferences.get("content_type", "Film")
+        
+        # Length preference
         if content_type == "Film":
             length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)", "Any length"])
         elif content_type == "Series":
@@ -436,42 +438,19 @@ elif st.session_state.page == "step2":
                 "Any length"
             ])
 
-        streaming_services_options = ["Netflix", "Amazon Prime", "Disney+", "HBO Max", "Hulu", "Apple TV+", "Other"]
-        streaming_services = []
-        st.markdown("**Which streaming services do you have?**")
-        for service in streaming_services_options:
-            if st.checkbox(service):
-                streaming_services.append(service)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            back_button = st.form_submit_button("Back")
-        with col2:
-            next_button = st.form_submit_button("Next")
-
-    if next_button:
-        st.session_state.preferences["length"] = length
-        st.session_state.preferences["streaming_services"] = streaming_services
-        goto("step3")
-    elif back_button:
-        goto("step1")
-
-# ------------------- STEP 3 -------------------
-# Step 3 of the form: gathers detailed user preferences like genre, tone and favorite people before showing results
-elif st.session_state.page == "step3":
-    special_buttons()
-    with st.form("step3_form"):
-        content_type = st.session_state.preferences.get("content_type", "Film")
-        
-        # Show animation preference for all content types
+        # Animation preference
         animation_preference = st.radio("Would you prefer animated or live-action?", ["Animated", "Live-action", "Both"])
         
+        # Modern or classic
         modern_or_classic = st.radio("Modern or classic?", ["Modern (2010+)", "Classic (before 2010)", "Doesn't matter"])
-        watching_group = st.radio("Are you watching alone or in a group?", ["Alone", "In a group"])
+        
+        # Genre selection
         genre_choice = st.multiselect("Which genre are you interested in?", options=list(GENRE_MAP.keys()))
+        
+        # Popularity type
         popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])
 
-        # Always show the actor/director field
+        # Actor/director input
         actor_or_director = st.text_input("Any actors or directors you love? (optional)")
 
         col1, col2 = st.columns(2)
@@ -482,16 +461,16 @@ elif st.session_state.page == "step3":
 
     if next_button:
         st.session_state.preferences.update({
+            "length": length,
             "animation_preference": animation_preference,
             "modern_or_classic": modern_or_classic,
-            "watching_group": watching_group,
             "genres": genre_choice,
             "popularity_type": popularity_type,
             "favorite_person": actor_or_director
         })
         goto("results")
     elif back_button:
-        goto("step2")
+        goto("step1")
 
 # ------------------- RESULTS -------------------
 elif st.session_state.page == "results":
@@ -539,7 +518,7 @@ elif st.session_state.page == "results":
             st.subheader("Recommended Movies:")
 
             if liked_movies_list:
-                st.info(f"Personalizing recommendations based on {len(liked_movies_list)}liked movie(s)!")
+                st.info(f"Personalizing recommendations based on {len(liked_movies_list)} liked movie(s)!")
             
             for genre in prefs["genres"]:
                 genre_id = GENRE_MAP.get(genre)
@@ -572,7 +551,7 @@ elif st.session_state.page == "results":
                         movie_id = movie.get("id")
                         release_year = movie.get("release_date", "")[:4]
                         trailer_url = get_trailer(movie_id, "movie")
-                        movie_genres = movie.get ("genre_ids",[])
+                        movie_genres = movie.get("genre_ids",[])
 
                         #User can say if he/she likes/dislikes the movie
                         col1,col2 = st.columns([3,1])
@@ -600,7 +579,7 @@ elif st.session_state.page == "results":
                         st.caption(overview)
                         if trailer_url:
                             st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
-                            st.markdown("---")
+                        st.markdown("---")
         
         # Show Series
         if content_type in ["Series", "Both"]:
@@ -619,51 +598,51 @@ elif st.session_state.page == "results":
                         num_results=10
                     )
 
-            #Re-rank using Machine Learning
-            if liked_movies_list and series_list:
-                series_list = reorder_movies_by_preference(series_list, liked_movies_list)
+                    #Re-rank using Machine Learning
+                    if liked_movies_list and series_list:
+                        series_list = reorder_movies_by_preference(series_list, liked_movies_list)
 
-            if series_list:
-                st.markdown(f"### {genre}")
-                for series in series_list:
-                    title = series.get("name")
-                    overview = series.get("overview", "No description available.")
-                    poster_path = series.get("poster_path")
-                    poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
-                    imdb_score = series.get("vote_average")
-                    series_id = series.get("id")
-                    first_air_year = series.get("first_air_date", "")[:4]
-                    trailer_url = get_trailer(series_id, "tv")
-                    series_genres = series.get("genre_ids", [])
-                    
-                    # Header row + Like/Dislike
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        st.markdown(f"**{title}** ({first_air_year})")
-                    with col2:
-                        like_key = f"like_series_{series_id}_{genre}"
-                        dislike_key = f"dislike_series_{series_id}_{genre}"
+                    if series_list:
+                        st.markdown(f"### {genre}")
+                        for series in series_list:
+                            title = series.get("name")
+                            overview = series.get("overview", "No description available.")
+                            poster_path = series.get("poster_path")
+                            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                            imdb_score = series.get("vote_average")
+                            series_id = series.get("id")
+                            first_air_year = series.get("first_air_date", "")[:4]
+                            trailer_url = get_trailer(series_id, "tv")
+                            series_genres = series.get("genre_ids", [])
+                            
+                            # Header row + Like/Dislike
+                            col1, col2 = st.columns([3, 1])
+                            with col1:
+                                st.markdown(f"**{title}** ({first_air_year})")
+                            with col2:
+                                like_key = f"like_series_{series_id}_{genre}"
+                                dislike_key = f"dislike_series_{series_id}_{genre}"
 
-                        col_like, col_dislike = st.columns(2)
-                        with col_like:
-                            if st.button("Like", key=like_key):
-                                save_liked_movie(series_id, title, series_genres, imdb_score, liked=True)
-                                st.success(f"Saved '{title}' to your preferences!")
-                                st.rerun()
+                                col_like, col_dislike = st.columns(2)
+                                with col_like:
+                                    if st.button("Like", key=like_key):
+                                        save_liked_movie(series_id, title, series_genres, imdb_score, liked=True)
+                                        st.success(f"Saved '{title}' to your preferences!")
+                                        st.rerun()
 
-                        with col_dislike:
-                            if st.button("Dislike", key=dislike_key):
-                                save_liked_movie(series_id, title, series_genres, imdb_score, liked=False)
-                                st.info(f"Noted that you don't like '{title}'")
-                                st.rerun()
-                  
-                    if poster_url:
-                        st.image(poster_url, width=150)
-                    st.markdown(f"IMDb Score: {imdb_score}")
-                    st.caption(overview)
-                    if trailer_url:
-                        st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
-                    st.markdown("---")                    
+                                with col_dislike:
+                                    if st.button("Dislike", key=dislike_key):
+                                        save_liked_movie(series_id, title, series_genres, imdb_score, liked=False)
+                                        st.info(f"Noted that you don't like '{title}'")
+                                        st.rerun()
+                          
+                            if poster_url:
+                                st.image(poster_url, width=150)
+                            st.markdown(f"IMDb Score: {imdb_score}")
+                            st.caption(overview)
+                            if trailer_url:
+                                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                            st.markdown("---")                    
 
         # Show content by favorite actor/director
         if prefs.get("favorite_person"):
@@ -744,24 +723,24 @@ elif st.session_state.page == "results":
                     series_id = series.get("id")
                     first_air_year = series.get("first_air_date", "")[:4]
                     trailer_url = get_trailer(series_id, "tv")
-                    series_genres = series.get ("genre_ids", [])
+                    series_genres = series.get("genre_ids", [])
 
                     col1, col2 = st.columns([3, 1])
                     with col1:
-                        st.markdown(f"**{title}** ({release_year})")
+                        st.markdown(f"**{title}** ({first_air_year})")
                     with col2:
-                        like_key = f"like_person_{movie_id}"
-                        dislike_key = f"dislike_person_{movie_id}"
+                        like_key = f"like_person_series_{series_id}"
+                        dislike_key = f"dislike_person_series_{series_id}"
                 
                         col_like, col_dislike = st.columns(2)
                         with col_like:
                             if st.button("Like", key=like_key):
-                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=True)
+                                save_liked_movie(series_id, title, series_genres, imdb_score, liked=True)
                                 st.success(f"Saved '{title}' to your preferences!")
                                 st.rerun()
                         with col_dislike:
                             if st.button("Dislike", key=dislike_key):
-                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)
+                                save_liked_movie(series_id, title, series_genres, imdb_score, liked=False)
                                 st.info(f"Noted that you don't like '{title}'")
                                 st.rerun()
                     
