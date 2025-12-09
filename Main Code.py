@@ -624,7 +624,7 @@ elif st.session_state.page == "results":
             if liked_movies_list and series_list:
                 series_list = reorder_movies_by_preference(series_list, liked_movies_list)
 
-             if series_list:
+            if series_list:
                 st.markdown(f"### {genre}")
                 for series in series_list:
                     title = series.get("name")
