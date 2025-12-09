@@ -1,1 +1,2 @@
-["The Last Romantic", "The Romantic Barber", "Romantic", "The Romantic Double Rings"]
+data = json.load(f)
+[m for m in data if isinstance(m, dict)]   # removes everything
