@@ -592,7 +592,7 @@ elif st.session_state.page == "results":
                             if st.button("Dislike", key=dislike_key):
                                 save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)
                                 st.info(f"Noted that you don't like '{title}'")
-                                st.rerun
+                                st.rerun()
 
                         st.markdown(f"**{title}** ({release_year})")                        
                         if poster_url:
