@@ -3,3 +3,4 @@ numpy
 dotenv
 pathlib
 sklearn.metrics.pairwise
+sklearn
