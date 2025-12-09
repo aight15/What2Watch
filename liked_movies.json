@@ -1,2 +1,2 @@
 data = json.load(f)
-[m for m in data if isinstance(m, dict)]   # removes everything
+[m for m in data if isinstance(m, dict)]
