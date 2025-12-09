@@ -445,7 +445,19 @@ elif st.session_state.page == "step2":
         modern_or_classic = st.radio("Modern or classic?", ["Modern (2010+)", "Classic (before 2010)", "Doesn't matter"])
         
         # Genre selection
-        genre_choice = st.multiselect("Which genre are you interested in?", options=list(GENRE_MAP.keys()))
+        # Determine preferred genre from sidebar if any titles selected
+        preferred_genre_text = ""
+        if selected_titles:
+            max_score = max(genre_scores.values())
+            if max_score > 0:
+                top_genres = [g for g, score in genre_scores.items() if score == max_score]
+                if len(top_genres) == 1:
+                    preferred_genre_text = f"(Your preferred genre is **{top_genres[0]}**)"
+                else:
+                    preferred_genre_text = f"(Your preferred genres are **{', '.join(top_genres)}**)"
+        
+        st.markdown(f"**Which genre are you interested in?** {preferred_genre_text}")
+        genre_choice = st.multiselect("", options=list(GENRE_MAP.keys()), label_visibility="collapsed")
         
         # Popularity type
         popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])
