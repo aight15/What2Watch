@@ -680,7 +680,7 @@ elif st.session_state.page == "results":
 
                 #Re-rank using Machine Learning if user has liked the movie
                 if liked_movies_list and person_movies:
-                    person_movies = reorder_movies_by_preferences(person_movies, liked_movies_list)
+                    person_movies = reorder_movies_by_preference(person_movies, liked_movies_list)
                     
                 for movie in person_movies:
                     title = movie.get("title")
@@ -733,7 +733,7 @@ elif st.session_state.page == "results":
 
                 #Re-ranking using Machine Learning based on likes (movies+series)
                 if liked_movies_list and person_series:
-                    person_series = reorder_movies_by_preferences(person_series, liked_movies_list)
+                    person_series = reorder_movies_by_preference(person_series, liked_movies_list)
                 
                 for series in person_series:
                     title = series.get("name")
