@@ -652,6 +652,11 @@ elif st.session_state.page == "results":
                     year_max=year_max,
                     num_results=10
                 )
+
+                #Re-rank using Machine Learning if user has liked the movie
+                if liked_movies_list and person_movies:
+                    person_movies = reorder_movies_by_preference(person_movies, liked_movies_list)
+                    
                 for movie in person_movies:
                     title = movie.get("title")
                     overview = movie.get("overview", "No description available.")
@@ -661,8 +666,27 @@ elif st.session_state.page == "results":
                     movie_id = movie.get("id")
                     release_year = movie.get("release_date", "")[:4]
                     trailer_url = get_trailer(movie_id, "movie")
+                    movie_genres = movie.get("genre_ids", [])
 
-                    st.markdown(f"**{title}** ({release_year})")
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.markdown(f"**{title}** ({release_year})")
+                    with col2:
+                        like_key = f"like_person_{movie_id}"
+                        dislike_key = f"dislike_person_{movie_id}"
+                
+                        col_like, col_dislike = st.columns(2)
+                        with col_like:
+                            if st.button("Like", key=like_key):
+                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=True)
+                                st.success(f"Saved '{title}' to your preferences!")
+                                st.rerun()
+                        with col_dislike:
+                            if st.button("Dislike", key=dislike_key):
+                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)
+                                st.info(f"Noted that you don't like '{title}'")
+                                st.rerun()
+
                     if poster_url:
                         st.image(poster_url, width=150)
                     st.markdown(f"IMDb Score: {imdb_score}")
