@@ -47,14 +47,14 @@ genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
 
 title_genres = {
     "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
-    "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "The Conjuring":        {"Comedy": 0, "Horror": 2, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
     "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
     "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},
     "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},
     "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 1},
 
     "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},
-    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
+    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
     "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 1},
     "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
     "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 1},
