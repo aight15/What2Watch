@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import requests
 import random
+import json
+from sklearn.metrics.pairwise import cosine_similarity
+from pathlib import Path
 
 # ------------------- PAGE SETUP -------------------
 st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
