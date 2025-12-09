@@ -593,8 +593,7 @@ elif st.session_state.page == "results":
                                 save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)
                                 st.info(f"Noted that you don't like '{title}'")
                                 st.rerun()
-
-                        st.markdown(f"**{title}** ({release_year})")                        
+                        
                         if poster_url:
                             st.image(poster_url, width=150)
                         st.markdown(f"IMDb Score: {imdb_score}")
@@ -656,8 +655,7 @@ elif st.session_state.page == "results":
                                 save_liked_movie(series_id, title, series_genres, imdb_score, liked=False)
                                 st.info(f"Noted that you don't like '{title}'")
                                 st.rerun()
-
-                    st.markdown(f"**{title}** ({first_air_year})")                    
+                  
                     if poster_url:
                         st.image(poster_url, width=150)
                     st.markdown(f"IMDb Score: {imdb_score}")
@@ -712,8 +710,7 @@ elif st.session_state.page == "results":
                                 save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)
                                 st.info(f"Noted that you don't like '{title}'")
                                 st.rerun()
-
-                    st.markdown(f"**{title}** ({release_year})")                    
+                 
                     if poster_url:
                         st.image(poster_url, width=150)
                     st.markdown(f"IMDb Score: {imdb_score}")
@@ -767,7 +764,6 @@ elif st.session_state.page == "results":
                                 st.info(f"Noted that you don't like '{title}'")
                                 st.rerun()
                     
-                    st.markdown(f"**{title}** ({first_air_year})")
                     if poster_url:
                         st.image(poster_url, width=150)
                     st.markdown(f"IMDb Score: {imdb_score}")
