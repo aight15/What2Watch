@@ -23,7 +23,7 @@ def goto(page_name):
     st.session_state.page = page_name
 
 # ------------------- SIDE BAR ---------------------
-st.sidebar.markdown("Without thinking too much, which of these movies/series would you rather watch right now?")
+st.sidebar.markdown("Let's see what genre you prefer: please click on the movies/series you would most rather watch right now?")
 
 movies = [
     "Pixels",
