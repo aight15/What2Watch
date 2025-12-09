@@ -530,10 +530,17 @@ elif st.session_state.page == "results":
         
         # Determine popularity
         pop_type = "popular" if prefs["popularity_type"] == "Popular & trending" else "underrated"
+
+        # Load liked movies for personalization
+        liked_movies_list = load_liked_movies()
         
         # Show Movies
         if content_type in ["Film", "Both"]:
             st.subheader("Recommended Movies:")
+
+            if liked_movies_list:
+                st.info(f"Personalizing recommendations based on {len(liked_movies_list)}liked movie(s)!")
+            
             for genre in prefs["genres"]:
                 genre_id = GENRE_MAP.get(genre)
                 if genre_id:
@@ -547,25 +554,53 @@ elif st.session_state.page == "results":
                         year_max=year_max,
                         num_results=10
                     )
-                    if movies:
-                        st.markdown(f"### {genre}")
-                        for movie in movies:
-                            title = movie.get("title")
-                            overview = movie.get("overview", "No description available.")
-                            poster_path = movie.get("poster_path")
-                            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
-                            imdb_score = movie.get("vote_average")
-                            movie_id = movie.get("id")
-                            release_year = movie.get("release_date", "")[:4]
-                            trailer_url = get_trailer(movie_id, "movie")
 
+                    if not movies:
+                        continue
+
+                    #Re-rank movies using Machine Learning if user has liked movies
+                    if liked_movies_list:
+                        movies = reorder_movies_by_preference(movies, liked_movies_list)
+                    
+                    st.markdown(f"### {genre}")
+                    for movie in movies:
+                        title = movie.get("title")
+                        overview = movie.get("overview", "No description available.")
+                        poster_path = movie.get("poster_path")
+                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+                        imdb_score = movie.get("vote_average")
+                        movie_id = movie.get("id")
+                        release_year = movie.get("release_date", "")[:4]
+                        trailer_url = get_trailer(movie_id, "movie")
+                        movie_genres = movie.get ("genre_ids",[])
+
+                        #User can say if he/she likes/dislikes the movie
+                        col1,col2 = st.columns([3,1])
+                        with col1:
                             st.markdown(f"**{title}** ({release_year})")
-                            if poster_url:
-                                st.image(poster_url, width=150)
-                            st.markdown(f"IMDb Score: {imdb_score}")
-                            st.caption(overview)
-                            if trailer_url:
-                                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+                        with col2:
+                            like_key = f"like_{movie_id}_{genre}"
+                            dislike_key = f"dislike_{movie_id}_{genre}"
+
+                            col_like, col_dislike = st.columns(2)
+                        with col_like:
+                            if st.button("Like", key=like_key):
+                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=True)
+                                st.success(f"Saved '{title}' to your preferences!")
+                                st.rerun()
+                        with col_dislike:
+                            if st.button("Dislike", key=dislike_key):
+                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)
+                                st.info(f"Noted that you don't like '{title}'")
+                                st.rerun
+
+                            
+                        if poster_url:
+                            st.image(poster_url, width=150)
+                        st.markdown(f"IMDb Score: {imdb_score}")
+                        st.caption(overview)
+                        if trailer_url:
+                            st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
                             st.markdown("---")
         
         # Show Series
