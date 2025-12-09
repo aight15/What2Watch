@@ -633,7 +633,8 @@ elif st.session_state.page == "results":
                     imdb_score = series.get("vote_average")
                     series_id = series.get("id")
                     first_air_year = series.get("first_air_date", "")[:4]
-                    trailer_url = get_trailer(series_id, "tv")                
+                    trailer_url = get_trailer(series_id, "tv")
+                    series_genres = series.get("genre_ids", [])
                     
                     # Header row + Like/Dislike
                     col1, col2 = st.columns([3, 1])
