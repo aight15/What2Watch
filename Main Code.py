@@ -520,7 +520,7 @@ def special_buttons():
             st.rerun()
 
 # STEP 1
-# Step 1: Asking user for content type (Film, Serie)
+# Step 1: Asking user for content type (Film, Series)
 # Display of Random Movie and Ryan Gosling buttons
 if st.session_state.page == "step1":
     special_buttons()
