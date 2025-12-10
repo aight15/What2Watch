@@ -615,7 +615,7 @@ elif st.session_state.page == "results":
     if not prefs.get("genres"):
         st.warning("Please go back and select at least one genre.")  # Showing warning message
     else:
-        # If user selected genres, proceeing with recommendations
+        # If user selected genres, proceeding with recommendations
         runtime_min, runtime_max = None, None
         episode_runtime_min, episode_runtime_max = None, None
         # Getting length preference from before
