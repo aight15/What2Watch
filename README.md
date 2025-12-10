@@ -43,12 +43,12 @@ The likes and Dislikes will re-rank the future results, so it won't just be dele
 ---
 
 ### Core Functions
-- `get_movies_by_genre(...)` / `get_series_by_genre(...)`: Discover with filters (animation, runtime/years). TV runtime filters are intentionally limited (API constraints). fileciteturn1file4
-- `get_movies_by_actor_or_director(...)` / `get_series_by_actor(...)`: Person search → discover by `with_cast`. fileciteturn1file11
-- `get_ryan_gosling_movies()`: Fun page fetching Gosling’s top‑rated films. fileciteturn1file6
-- `get_random_movie()`: Truly random popular film (random page + random pick). fileciteturn1file10
-- `get_trailer(...)`: YouTube trailer via TMDB videos. fileciteturn1file10
-- `load_liked_movies()` / `save_liked_movie(...)`: Read/write simple local preferences. fileciteturn1file6
+- `get_movies_by_genre(...)` / `get_series_by_genre(...)`: Discover with filters (animation, runtime/years). TV runtime filters are intentionally limited (API constraints). 
+- `get_movies_by_actor_or_director(...)` / `get_series_by_actor(...)`: Person search → discover by `with_cast`. 
+- `get_ryan_gosling_movies()`: Fun page fetching Gosling’s top‑rated films.
+- `get_random_movie()`: Truly random popular film (random page + random pick). 
+- `get_trailer(...)`: YouTube trailer via TMDB videos.
+- `load_liked_movies()` / `save_liked_movie(...)`: Read/write simple local preferences.
 
 ### User experience
 1. **Step 1**:
