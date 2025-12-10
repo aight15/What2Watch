@@ -17,8 +17,10 @@
 
 ## Goals and Objectives
 
-A Streamlit app that recommends movies and TV series from TMDB based on simple preferences and a personalization layer. 
-Users pick formats, runtime, animation vs. live-action, modern vs. classic, genres, and optionally a favorite actor/director. 
+A common Problem among alot of People is indecisiveness when it comes to Movies. We all were at that point, where we searched for a movie to watch but couldn't find anything that matched your preferences perfectly. So main goal of What2Watch is to remove the obstacles standing between the user and a great movie.
+
+What2watch recommends movies and TV series from TMDB based on simple preferences and a personalization layer. 
+Users pick formats, runtime, animation vs. live-action, modern vs. classic, genres, and optionally a favorite actor/director. It also offers and random button and a Ryan Gosling button.
 Results include:
 - Posters of the Recommendation
 - Brief overviews
