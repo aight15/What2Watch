@@ -526,7 +526,7 @@ if st.session_state.page == "step1":
     special_buttons()
     st.title("What2Watch")
     with st.form("step1_form"):
-        content_type = st.radio("Do you want to watch a movie or a serie?", ["Film", "Series"])
+        content_type = st.radio("Do you want to watch a movie or a series?", ["Film", "Series"])
         next_button = st.form_submit_button("Next")
     if next_button:
         st.session_state.preferences["content_type"] = content_type
