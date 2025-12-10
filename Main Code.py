@@ -1,12 +1,12 @@
 # Importation of necessary libraries for the application
-import streamlit as st  # Web framework for creating the UI
-import matplotlib.pyplot as plt  # Plotting library for creating the radar chart
-import numpy as np  # Numerical operations library for arrays and math
-import requests  # HTTP library for making API calls to TMDB
-import random  # Random number generation for random movie feature
-import json  # JSON parsing library for saving/loading user preferences
-from sklearn.metrics.pairwise import cosine_similarity  # ML library for calculating similarity scores
-from pathlib import Path  # File path handling library
+import streamlit as st
+import matplotlib.pyplot as plt
+import numpy as np
+import requests
+import random
+import json
+from sklearn.metrics.pairwise import cosine_similarity
+from pathlib import Path
 
 # PAGE SETUP
 # Configuration of the Streamlit page with title and icon
@@ -35,26 +35,26 @@ st.sidebar.markdown("Uncertain which genre you like? Select below which movies a
 
 # Definition of predefined lists of movies for genre analysis
 movies = [
-    "Pixels",  # Comedy/Sci-Fi/Action movie
-    "The Conjuring",  # Horror movie
-    "Blade Runner 2049",  # Sci-Fi/Drama/Action movie
-    "The Shawshank Redemption",  # Drama movie
-    "John Wick",  # Action movie
-    "The Notebook"  # Drama/Romance movie
+    "Pixels",
+    "The Conjuring",
+    "Blade Runner 2049",
+    "The Shawshank Redemption",
+    "John Wick",
+    "The Notebook"
 ]
 
 # Definition of predefined lists of TV series for genre analysis
 series = [
-    "Breaking Bad",  # Drama/Action series
-    "Stranger Things",  # Horror/Sci-Fi/Action series
-    "Friends",  # Comedy/Romance series
-    "The Office",  # Comedy series
-    "Game of Thrones",  # Drama/Action/Romance series
-    "Black Mirror"  # Sci-Fi/Drama series
+    "Breaking Bad",
+    "Stranger Things",
+    "Friends",
+    "The Office",
+    "Game of Thrones",
+    "Black Mirror"
 ]
 
 # Definition of the genre categories used in the radar chart
-genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]  # List of all available genres
+genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]
 
 # Map of each title to its genre composition
 title_genres = {
