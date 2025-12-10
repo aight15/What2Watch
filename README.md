@@ -5,28 +5,26 @@
 - Goals and Objectives
 - Features
   - Data sources and API's
-  - [Personalization (“ML‑Light”)](#personalization-mllight)
-  - [Core Functions](#core-functions)
-  - [User Flow](#user-flow)
-- [Architecture & Tech Stack](#architecture--tech-stack)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Run](#run)
-- [Data & Persistence](#data--persistence)
-- [UX Details](#ux-details)
-- [Limitations](#limitations)
-- [Roadmap](#roadmap)
-- [Disclosures & Credits](#disclosures--credits)
+  - Machine Learning
+  - Core Functions
+  - User experience
+  - Database Design
+- Limitations
+- Disclosure
+- Team Structure
 
 ---
 
-## Goals
+## Goals and Objectives
 
-A Streamlit app that recommends movies and TV series from TMDB based on simple preferences and a personalization layer. Users pick formats, runtime, animation vs. live-action, modern vs. classic, genres, and optionally a favorite actor/director. Results include posters, brief overviews, IMDb-style scores, and trailer links. Likes are saved locally and used to re-rank future results. fileciteturn1file1
-
-- Help users find a **watchlist quickly** without endless scrolling.
-- Provide **intuitive controls**: genres, runtime, animation, modern/classic, popularity.
-- Deliver **light personalization** using saved likes + cosine similarity. fileciteturn1file2
+A Streamlit app that recommends movies and TV series from TMDB based on simple preferences and a personalization layer. 
+Users pick formats, runtime, animation vs. live-action, modern vs. classic, genres, and optionally a favorite actor/director. 
+Results include:
+- Posters of the Recommendation
+- Brief overviews
+- IMDb-style scores
+- Trailer links
+Likes are saved locally and used to re-rank future results. 
 
 ---
 
@@ -34,14 +32,15 @@ A Streamlit app that recommends movies and TV series from TMDB based on simple p
 
 ### Data Sources & APIs
 - **TMDB (The Movie Database)** for discovery endpoints (movie/TV), person search, and videos (YouTube keys):
-  - `/discover/movie`, `/discover/tv`, `/search/person`, `/{type}/{id}/videos`.
-  - Sorting by `popularity.desc` or `vote_average.desc` with sensible `vote_count` floors. fileciteturn1file4
-- **Images** via TMDB posters (`image.tmdb.org/t/p/w200|w500`). fileciteturn1file16
+- **Images** via TMDB posters 
 
-### Personalization (“ML‑Light”)
-- Build **feature vectors** per title: one‑hot **genre_ids** + normalized **vote_average** + log‑scaled **popularity**.
-- Aggregate **user profile** from liked titles; re-rank candidates by **cosine_similarity**. fileciteturn1file7
-- Preferences persist in a local JSON file `liked_movies.json`. fileciteturn1file6
+---
+
+### Machine Learing
+Each Recommendation based on the specified preferences has a like and dislike button next to it.
+The likes and Dislikes will re-rank the future results, so it won't just be deleted out of the Recommendations. The likes will appear on top of Future lists and the dislikes at the bottom
+
+---
 
 ### Core Functions
 - `get_movies_by_genre(...)` / `get_series_by_genre(...)`: Discover with filters (animation, runtime/years). TV runtime filters are intentionally limited (API constraints). fileciteturn1file4
@@ -51,92 +50,65 @@ A Streamlit app that recommends movies and TV series from TMDB based on simple p
 - `get_trailer(...)`: YouTube trailer via TMDB videos. fileciteturn1file10
 - `load_liked_movies()` / `save_liked_movie(...)`: Read/write simple local preferences. fileciteturn1file6
 
-### User Flow
-1. **Step 1**: Choose **Film**, **Series**, or **Both**. fileciteturn1file9  
-2. **Step 2**: Set runtime, animation vs. live‑action, modern vs. classic, genre(s), popularity, and an optional favorite actor/director. Sidebar quiz helps infer preferred genres and draws a radar chart. fileciteturn1file3
-3. **Results**: Per‑genre sections with poster, score, overview, **trailer link**, and **Like/Dislike**. Lists are optionally re‑ranked by your likes. fileciteturn1file18
-4. **Special Modes**: **Random Movie** and **Ryan Gosling** pages. fileciteturn1file16
+### User experience
+1. **Step 1**:
+   Choose **Film**, **Series**, or **Both**.
 
+   Or there are also Options like:
+   **Random Movie**
+   As the name says, it will give you a random movie
+
+   **Ryan Gosling Button**
+   It will recommend the highest rated Ryan gosling Movies, because who doesn't
+   like Ryan Gosling ;)
+   
+3. **Step 2**:
+  Set runtime, animation vs. live‑action, modern vs. classic, genre(s), popularity, and an optional favorite actor/director. Sidebar quiz helps infer preferred genres and draws a radar chart.
+
+4. **Result Page**:
+Per‑genre sections with poster, score, overview of the movie, trailer link, and **Like/Dislike Button** for future Recommendations.
+You can also navigate with **Back** and **Next** to change certain preferences and to check the Questions again
+
+Details:
+- **Sidebar quiz**: Quick checkboxes for known titles; computes a per‑genre score and draws a polar **radar chart** for guidance. fileciteturn1file3
+- **Results lists**: Each genre renders a compact card with poster, score, overview, trailer link, and Like/Dislike buttons. Re‑ranking applies when likes exist.
+- **Stateful pages**: Navigation managed in `st.session_state.page`.
+  
 ---
 
-## Architecture & Tech Stack
-
-- **Frontend/Host**: Streamlit, multi‑page navigation via `st.session_state`. fileciteturn1file1
-- **Core Libraries**: `requests` (TMDB), `numpy`, `scikit-learn` (`cosine_similarity`), `matplotlib` (radar chart). fileciteturn1file1
-- **Local Storage**: `liked_movies.json` in project root. fileciteturn1file6
-
----
-
-## Installation
-
-**Prerequisites**
-- Python **3.10+**
-- `pip` and a virtual environment
-
-**Setup**
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-source .venv/bin/activate
-pip install streamlit numpy requests scikit-learn matplotlib
-```
-
-Optional: create `requirements.txt` for reproducible installs.
-
----
-
-## Configuration
-
-**TMDB API Key**: recommended via environment variable (avoid hardcoding in production).
-
-```bash
-# macOS/Linux
-export TMDB_API_KEY="YOUR_KEY"
-# PowerShell
-$env:TMDB_API_KEY="YOUR_KEY"
-```
-
-Update code to read `os.getenv("TMDB_API_KEY")`. The current script includes a hardcoded key placeholder — **do not ship** secrets this way. fileciteturn1file3
-
-**Streamlit config (optional)**: place images like `logo.jpg` in project root; app uses `st.set_page_config(...)`. fileciteturn1file1
-
----
-
-## Run
-
-```bash
-streamlit run Projekt_1.11.25_fixed.py
-```
-
-- App opens in your default browser.  
-- Navigate via **Next/Back**, **Random Movie**, **Ryan Gosling**.  
-- Pick genres, runtime, etc., and browse recommendations with trailers. fileciteturn1file9
-
----
-
-## Data & Persistence
-
+## Database design
 - Likes/Dislikes are stored in `liked_movies.json` as simple dict entries (id, title, genres, rating, liked). fileciteturn1file7
 - No external user accounts; delete or edit the file to reset preferences.
 
 ---
 
-## UX Details
+## Limitations
 
-- **Sidebar quiz**: Quick checkboxes for known titles; computes a per‑genre score and draws a polar **radar chart** for guidance. fileciteturn1file3
-- **Results lists**: Each genre renders a compact card with poster, score, overview, trailer link, and Like/Dislike buttons. Re‑ranking applies when likes exist. fileciteturn1file18
-- **Stateful pages**: Navigation managed in `st.session_state.page`. fileciteturn1file1
+- **Profile**: Although the Web Application gives us recommendations based on our preferences there is no Profile, which could also be helpful to keep a track of movies weve already seen. also a Final Ranking would enable us to save our favorite Movies in our Profile.
+  
+- **TV runtimes**: TMDB episode runtime metadata is inconsistent; filtering is limited by the API.
+  
+- **Simple model**: The re‑ranker uses only genres, rating, and popularity — a pragmatic **hinting system** so it wont 100% fulfil the mood in which the user is. With the Categories it tries to find out the Preference but it could also be wrong.
+
+- **quantity of Categories**: There are also alot of Categories which play a role in finding the right movie for the night. These Categories also play a role for the Recommendation but we had to limit ourselves to the central categories.
+  
+- **Local persistence**: JSON file is single‑user and unsynced; no multi‑device support.
 
 ---
 
-## Limitations
-
-- **Data quality**: `vote_average` can be noisy; the “underrated” path lowers `vote_count` thresholds and may surface outliers. fileciteturn1file4
-- **TV runtimes**: TMDB episode runtime metadata is inconsistent; filtering is limited by the API. fileciteturn1file4
-- **Simple model**: The re‑ranker uses only genres, rating, and popularity — a pragmatic **hinting system**, not a full recommender. fileciteturn1file7
-- **Local persistence**: JSON file is single‑user and unsynced; no multi‑device support. fileciteturn1file7
-
-
 ## Disclosures & Credits
 
-- 
+- ChatGPT was used to generate the general structure, to add to the ideas we had. it helped us to bring our Ideas into a line of Code, from where we could continue to build our Webpage
+
+- ChatGPT helped us to add knowledge about specific functions, so we could use the knowledge to implement it to our Code
+
+- Excluding the general structure, AI was only used for high-level guidance advice, suggestions for structuring Code so the overview of the Code was clear and structure.
+It was also used for Implementation tips. So anytime ChatGPT was used we noted that part in our source comments with a tag
+
+- Familiy and Friends of the Group added their knowledge with tips and tricks to improve our Web applications for unanswered Questions about functionality.
+
+---
+
+## Team Structure
+This Matrix shows the structure and Organization inside our Team, it visualizes roles, responsibilities and documents individual Contributions to the Project in a contribution Matrix.
+
