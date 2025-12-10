@@ -1,4 +1,4 @@
-# Import necessary libraries for the application
+# Importation of necessary libraries for the application
 import streamlit as st  # Web framework for creating the UI
 import matplotlib.pyplot as plt  # Plotting library for creating the radar chart
 import numpy as np  # Numerical operations library for arrays and math
@@ -8,31 +8,32 @@ import json  # JSON parsing library for saving/loading user preferences
 from sklearn.metrics.pairwise import cosine_similarity  # ML library for calculating similarity scores
 from pathlib import Path  # File path handling library
 
-# ------------------- PAGE SETUP -------------------
-# Configure the Streamlit page with title and icon
-st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")  # Sets browser tab title and favicon
+# PAGE SETUP
+# Configuration of the Streamlit page with title and icon
+st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")
 
-# ------------------- LOGO AND TITLE -------------------
-# Create three columns with specific width ratios for centering the logo
-col1, col2, col3 = st.columns([1, 3, 1])  # Creates layout with wider middle column
-with col2:  # Use the middle column
-    st.image("logo.jpg", width=700)  # Display the What2Watch logo centered
+# LOGO AND TITLE
+# Creation of three columns with specific width ratios for centering the logo
+col1, col2, col3 = st.columns([1, 3, 1])
+with col2:
+    st.image("logo.jpg", width=700)
 
-# Initialize page navigation state if not already set
-if "page" not in st.session_state:  # Check if page state exists
-    st.session_state.page = "step1"  # Set default starting page to step1
+# Initialization of the page navigation state if not already set
+# Setting the default starting page to step1
+if "page" not in st.session_state:
+    st.session_state.page = "step1"
 
-# ------------------- PAGE NAVIGATION -------------------
+# PAGE NAVIGATION
 # Function to change the current page in the application
 def goto(page_name):
     """Navigate to a different page by updating session state"""
-    st.session_state.page = page_name  # Update the page state variable
+    st.session_state.page = page_name
 
-# ------------------- SIDE BAR ---------------------
-# Display sidebar instructions for the genre preference tool
-st.sidebar.markdown("Uncertain which genre you like? Select below which movies and series you've enjoyed and figure out what your prefered genre is.")  # Show explanation text
+# SIDE BAR
+# Displaying sidebar instructions for the genre preference
+st.sidebar.markdown("Uncertain which genre you like? Select below which movies and series you've enjoyed and figure out what your prefered genre is.")
 
-# Define predefined lists of movies for genre analysis
+# Definition of predefined lists of movies for genre analysis
 movies = [
     "Pixels",  # Comedy/Sci-Fi/Action movie
     "The Conjuring",  # Horror movie
@@ -42,7 +43,7 @@ movies = [
     "The Notebook"  # Drama/Romance movie
 ]
 
-# Define predefined lists of TV series for genre analysis
+# Definition of predefined lists of TV series for genre analysis
 series = [
     "Breaking Bad",  # Drama/Action series
     "Stranger Things",  # Horror/Sci-Fi/Action series
@@ -52,84 +53,88 @@ series = [
     "Black Mirror"  # Sci-Fi/Drama series
 ]
 
-# Define the genre categories used in the radar chart
+# Definition of the genre categories used in the radar chart
 genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]  # List of all available genres
 
-# Map each title to its genre composition
+# Map of each title to its genre composition
 title_genres = {
-    "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},  # Comedy/Sci-Fi/Action blend
-    "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},  # Pure horror
-    "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},  # Sci-Fi/Drama/Action
-    "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},  # Pure drama
-    "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},  # Pure action
-    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0.4},  # Drama/Romance
+    "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
+    "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},
+    "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},
+    "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},
+    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0.4},
 
-    "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},  # Drama/Action series
-    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},  # Horror/Sci-Fi/Action series
-    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0.4},  # Comedy/Romance series
-    "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},  # Pure comedy series
-    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},  # Drama/Action/Romance series
-    "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},  # Sci-Fi/Drama series
+    "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},
+    "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},
+    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0.4},
+    "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},
+    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},
+    "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},
 }
 
-# Create empty list to store user's selected titles
-selected_titles = []  # Will be populated based on checkbox selections
+# Creation of empty list to store user's selected titles based on checkbox selections
+selected_titles = []
 
-# Display movie checkboxes in sidebar
-st.sidebar.markdown("#### Movies")  # Section header for movies
+# Displaying movie checkboxes in the sidebar
+# Looping through each movie in the list and adding movie to selected list if checked
+st.sidebar.markdown("#### Movies")
 for m in movies:  # Loop through each movie in the list
-    if st.sidebar.checkbox(m, key=f"movie_{m}"):  # Create checkbox with unique key for each movie
-        selected_titles.append(m)  # Add movie to selected list if checked
+    if st.sidebar.checkbox(m, key=f"movie_{m}"):
+        selected_titles.append(m)
 
-# Display series checkboxes in sidebar
-st.sidebar.markdown("#### Series")  # Section header for series
+# Displaying series checkboxes in the sidebar
+# Looping through each series in the list and adding series to selected list if checked
+st.sidebar.markdown("#### Series")
 for s in series:  # Loop through each series in the list
-    if st.sidebar.checkbox(s, key=f"series_{s}"):  # Create checkbox with unique key for each series
+    if st.sidebar.checkbox(s, key=f"series_{s}"):
         selected_titles.append(s)  # Add series to selected list if checked
 
-# --- CALCULATE GENRE SCORES ---
-# Initialize all genre scores to zero
-genre_scores = {g: 0 for g in genres}  # Creates dictionary with each genre set to 0
+# CALCULATE GENRE SCORES
+# Initialization of all genre scores to zero
+genre_scores = {g: 0 for g in genres}
 
-# Calculate total score for each genre based on selected titles
-for title in selected_titles:  # Loop through each title user selected
-    for g in genres:  # Loop through each genre
-        genre_scores[g] += title_genres[title][g]  # Add genre value from title to total score
+# Calculatation of total score for each genre based on selected titles
+# Looping through each title which the user selected and looping through each genre
+# Adding genre value from title to total score
+for title in selected_titles:
+    for g in genres:
+        genre_scores[g] += title_genres[title][g]
 
-# Prepare values for radar chart by extracting scores in order
+# Preparation of values for radar chart by extracting scores in order
 values = [genre_scores[g] for g in genres]  # Convert dictionary to ordered list
 values += values[:1]  # Duplicate first value at end to close the radar chart polygon
 
-# --- RADAR CHART ---
-# Calculate number of genre axes for the chart
-num_vars = len(genres)  # Count of genres (6)
+# RADAR CHART
+# Calculation of number of genre axes for the chart
+num_vars = len(genres)
 
-# Calculate angle for each axis in radians
-angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()  # Evenly space angles around circle
-angles += angles[:1]  # Duplicate first angle to close the chart
+# Calculatation of angle for each axis in radians
+angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+angles += angles[:1]
 
-# Create polar subplot for radar chart
-fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(polar=True))  # Create 4x4 inch polar plot
+# Creation of polar subplot for radar chart
+fig, ax = plt.subplots(figsize=(4, 4), subplot_kw=dict(polar=True))
 
-# Plot the genre scores as a line on the radar chart
-ax.plot(angles, values, linewidth=2)  # Draw line connecting all points
-# Fill the area inside the radar chart polygon
-ax.fill(angles, values, alpha=0.25)  # Fill with 25% opacity
+# Plotting the genre scores as a line on the radar chart
+ax.plot(angles, values, linewidth=2)
+# Filling the area inside the radar chart
+ax.fill(angles, values, alpha=0.25)
 
-# Set the position and labels for each axis
-ax.set_xticks(angles[:-1])  # Set tick positions (exclude duplicate)
-ax.set_xticklabels(genres)  # Label each axis with genre name
-ax.set_rlabel_position(30)  # Rotate radial labels 30 degrees
+# Setting the position and labels for each axis with genre name
+ax.set_xticks(angles[:-1])
+ax.set_xticklabels(genres)
+ax.set_rlabel_position(30)
 
-# Display the radar chart in the sidebar
-st.sidebar.pyplot(fig)  # Render matplotlib figure in Streamlit
+# Displaying the radar chart in the sidebar based on user selection
+st.sidebar.pyplot(fig)
 
-# ------------------- TMDB SETUP -------------------
-# TMDB API configuration
-TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"  # API key for authenticating with TMDB
-TMDB_BASE_URL = "https://api.themoviedb.org/3"  # Base URL for all TMDB API endpoints
+# TMDB SETUP
+# Showing the TMDB API Key and URL
+TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"
+TMDB_BASE_URL = "https://api.themoviedb.org/3"
 
-# Map genre names to TMDB genre IDs FOR MOVIES
+# Mapping the genre names to TMDB genre IDs for movies
 MOVIE_GENRE_MAP = {
     "Action": 28,
     "Comedy": 35,
@@ -143,116 +148,123 @@ MOVIE_GENRE_MAP = {
     "Thriller": 53
 }
 
-# Map genre names to TMDB genre IDs FOR TV SERIES
+# Mapping the genre names to TMDB genre IDs for TV series
 TV_GENRE_MAP = {
-    "Action": 10759,      # Action & Adventure
+    "Action": 10759,
     "Comedy": 35,
     "Drama": 18,
-    "Sci-Fi": 10765,      # Sci-Fi & Fantasy
+    "Sci-Fi": 10765,
     "Documentary": 99,
     "Animation": 16,
     "Mystery": 9648,
     "Crime": 80
 }
 
-# ------------------- TMDB API FUNCTIONS -------------------
+# TMDB API FUNCTIONS
 # Function to fetch movies from TMDB based on genre and various filters
+# Optional filters are popularity, animation, runtime, release year
+# Usage of the MOVIE_GENRE_MAP
 def get_movies_by_genre(genre_name, popularity_type="popular", animation_filter=None, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     """Fetches movies from TMDB by genre with optional filters for popularity, animation, runtime and release year"""
-    genre_id = MOVIE_GENRE_MAP.get(genre_name)  # Use MOVIE_GENRE_MAP
+    genre_id = MOVIE_GENRE_MAP.get(genre_name)
     if not genre_id:
         return []
     
-    url = f"{TMDB_BASE_URL}/discover/movie"  # Build URL for movie discovery endpoint
-    # Set up query parameters for the API request
+    url = f"{TMDB_BASE_URL}/discover/movie"
+    # Set up for query parameters for the API request
     params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "with_genres": genre_id,  # Filter by genre ID
-        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",  # Sort by popularity or rating
-        "language": "en-US",  # Request English language results
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",
+        "language": "en-US",
         "vote_count.gte": 100 if popularity_type == "popular" else 50  # Minimum votes filter (higher for popular)
     }
 
-    # Apply animation filter if specified
-    if animation_filter == "Animated":  # User wants only animated content
-        params["with_genres"] = f"{genre_id},16"  # Add animation genre ID (16) to filter
-    elif animation_filter == "Live-action":  # User wants only live-action content
-        params["without_genres"] = "16"  # Exclude animation genre
+    # Application of animation filter or live-action filter if specified
+    if animation_filter == "Animated":
+        params["with_genres"] = f"{genre_id},16"
+    elif animation_filter == "Live-action":
+        params["without_genres"] = "16"
 
-    # Apply runtime filters if specified
-    if runtime_min:  # User specified minimum runtime
-        params["with_runtime.gte"] = runtime_min  # Greater than or equal to min runtime
-    if runtime_max:  # User specified maximum runtime
-        params["with_runtime.lte"] = runtime_max  # Less than or equal to max runtime
+    # Application of runtime filters if specified
+    if runtime_min:
+        params["with_runtime.gte"] = runtime_min
+    if runtime_max:
+        params["with_runtime.lte"] = runtime_max
     
-    # Apply year filters if specified
-    if year_min:  # User specified earliest year
-        params["primary_release_date.gte"] = f"{year_min}-01-01"  # Format as date (Jan 1)
-    if year_max:  # User specified latest year
-        params["primary_release_date.lte"] = f"{year_max}-12-31"  # Format as date (Dec 31)
+    # Application of release date filters if specified
+    if year_min:
+        params["primary_release_date.gte"] = f"{year_min}-01-01"
+    if year_max:
+        params["primary_release_date.lte"] = f"{year_max}-12-31"
 
-    # Make the API request
-    response = requests.get(url, params=params)  # Send GET request to TMDB
-    if response.status_code == 200:  # Check if request was successful
-        return response.json().get("results", [])[:num_results]  # Return first num_results movies
-    return []  # Return empty list if request failed
+    # Making the API request with checking if the request was successful
+    # Return of empty list if request failed
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:num_results]
+    return []
 
 # Function to fetch TV series from TMDB based on genre and various filters
+# Optional filters are popularity, animation, air date
+# Usage of the TV_GENRE_MAP
 def get_series_by_genre(genre_name, popularity_type="popular", animation_filter=None, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     """Fetches TV series from TMDB by genre with optional filters for popularity, animation and air date"""
     genre_id = TV_GENRE_MAP.get(genre_name)  # Use TV_GENRE_MAP
     if not genre_id:
         return []
     
-    url = f"{TMDB_BASE_URL}/discover/tv"  # Build URL for TV discovery endpoint
-    # Set up query parameters for the API request
+    url = f"{TMDB_BASE_URL}/discover/tv"
+    # Set up for query parameters for the API request
     params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "with_genres": genre_id,  # Filter by genre ID
-        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",  # Sort by popularity or rating
-        "language": "en-US",  # Request English language results
-        "vote_count.gte": 50  # Minimum votes filter
+        "api_key": TMDB_API_KEY,
+        "with_genres": genre_id,
+        "sort_by": "popularity.desc" if popularity_type == "popular" else "vote_average.desc",
+        "language": "en-US",
+        "vote_count.gte": 50
     }
 
-    # Apply animation filter if specified
+    # Application of animation filter or live-action filter if specified
     if animation_filter == "Animated":  # User wants only animated content
         params["with_genres"] = f"{genre_id},16"  # Add animation genre ID (16) to filter
     elif animation_filter == "Live-action":  # User wants only live-action content
         params["without_genres"] = "16"  # Exclude animation genre
     
-    # Apply year filters if specified
-    if year_min:  # User specified earliest air date
-        params["first_air_date.gte"] = f"{year_min}-01-01"  # Format as date (Jan 1)
-    if year_max:  # User specified latest air date
-        params["first_air_date.lte"] = f"{year_max}-12-31"  # Format as date (Dec 31)
+    # Application of air date filters if specified
+    if year_min:
+        params["first_air_date.gte"] = f"{year_min}-01-01"
+    if year_max:
+        params["first_air_date.lte"] = f"{year_max}-12-31"
 
-    # Make the API request
-    response = requests.get(url, params=params)  # Send GET request to TMDB
-    if response.status_code == 200:  # Check if request was successful
-        return response.json().get("results", [])[:num_results]  # Return first num_results series
-    return []  # Return empty list if request failed
+    # Making the API request with checking if the request was successful
+    # Return of empty list if request failed
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("results", [])[:num_results]
+    return []
 
 # Function to fetch movies featuring or directed by a specific person
 def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     """Fetches movies from TMDB featuring or directed by a person, with optional filters for runtime and release year"""
-    # First, search for the person by name
-    search_url = f"{TMDB_BASE_URL}/search/person"  # Build URL for person search endpoint
+    # Search for the person by name
+    search_url = f"{TMDB_BASE_URL}/search/person"
     search_params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "query": name,  # Person's name to search for
-        "language": "en-US"  # Request English language results
+        "api_key": TMDB_API_KEY,
+        "query": name,
+        "language": "en-US"
     }
-    response = requests.get(search_url, params=search_params)  # Send GET request to search for person
-    if response.status_code == 200 and response.json()["results"]:  # Check if search was successful and has results
-        person_id = response.json()["results"][0]["id"]  # Get the ID of the first matching person
-        # Now search for movies featuring this person
-        discover_url = f"{TMDB_BASE_URL}/discover/movie"  # Build URL for movie discovery endpoint
+    # Sending request to search for person and check if search was successful
+    response = requests.get(search_url, params=search_params)
+    if response.status_code == 200 and response.json()["results"]:
+        person_id = response.json()["results"][0]["id"]
+        # Search for movies featuring this person
+        discover_url = f"{TMDB_BASE_URL}/discover/movie"
         discover_params = {
-            "api_key": TMDB_API_KEY,  # Authentication key
-            "with_cast": person_id,  # Filter by person ID in cast
-            "sort_by": "popularity.desc",  # Sort by popularity
-            "vote_count.gte": 50,  # Minimum votes filter
-            "language": "en-US"  # Request English language results
+            "api_key": TMDB_API_KEY,
+            "with_cast": person_id,
+            "sort_by": "popularity.desc",
+            "vote_count.gte": 50,
+            "language": "en-US"
         }
         
         # Apply runtime filters if specified
