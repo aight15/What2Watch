@@ -690,7 +690,7 @@ elif st.session_state.page == "results":  # Check if current page is results
             st.subheader("Recommended Series:")  # Display section header
 
             if liked_movies_list:
-                st.info(f"Personalizing recommendations based on {len(liked_movies_list)}liked title(s)")
+                st.info(f"Personalizing recommendations based on {len(liked_movies_list)} liked title(s)")
 
             # Loop through each selected genre
             for genre in prefs["genres"]:  # Iterate through user's selected genres
@@ -757,7 +757,7 @@ elif st.session_state.page == "results":  # Check if current page is results
         # Show content by favorite actor/director section
         if prefs.get("favorite_person"):  # Check if user entered a favorite actor/director
             # Movies by favorite person
-            if content_type in ["Film", "Both"]:  # Check if user wants movie recommendations
+            if content_type in ["Film"]:  # Check if user wants movie recommendations
                 st.subheader(f"Movies featuring **{prefs['favorite_person']}**:")  # Display section header with person's name
                 # Fetch movies featuring this person
                 person_movies = get_movies_by_actor_or_director(
@@ -815,7 +815,7 @@ elif st.session_state.page == "results":  # Check if current page is results
                     st.markdown("---")  # Display horizontal divider
             
             # Series by favorite person
-            if content_type in ["Series", "Both"]:  # Check if user wants series recommendations
+            if content_type in ["Series"]:  # Check if user wants series recommendations
                 st.subheader(f"Series featuring **{prefs['favorite_person']}**:")  # Display section header with person's name
                 # Fetch series featuring this person
                 person_series = get_series_by_actor(
