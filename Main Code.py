@@ -14,7 +14,7 @@ st.set_page_config(page_title="What2Watch", page_icon="logo.jpg")  # Sets browse
 
 # ------------------- LOGO AND TITLE -------------------
 # Create three columns with specific width ratios for centering the logo
-col1, col2, col3 = st.columns([1, 5, 1])  # Creates layout with wider middle column
+col1, col2, col3 = st.columns([1, 3, 1])  # Creates layout with wider middle column
 with col2:  # Use the middle column
     st.image("logo.jpg", width=700)  # Display the What2Watch logo centered
 
