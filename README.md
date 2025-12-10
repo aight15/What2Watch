@@ -55,6 +55,7 @@ The likes and Dislikes will re-rank the future results, so it won't just be dele
    Choose **Film**, **Series**, or **Both**.
 
    Or there are also Options like:
+
    **Random Movie**
    As the name says, it will give you a random movie
 
