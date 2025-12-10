@@ -858,6 +858,11 @@ elif st.session_state.page == "results":  # Check if current page is results
 # Random Movie page: displays a random popular movie with details
 elif st.session_state.page == "random":  # Check if current page is random
     st.title("Random Movie Generator")  # Display page title
+
+    # Add spacing and back button
+    st.write("")  # Empty line for spacing
+    if st.button("← Back to Start"):  # Create back button with arrow
+        goto("step1")  # Navigate back to step 1
     
     # Button to get a new random movie
     if st.button("Give me another random movie!"):  # Create refresh button
@@ -885,11 +890,6 @@ elif st.session_state.page == "random":  # Check if current page is random
             st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)  # Display trailer link as h3 header
     else:  # Movie fetch failed
         st.warning("Could not fetch a random movie. Try again!")  # Show warning message
-
-    # Add spacing and back button
-    st.write("")  # Empty line for spacing
-    if st.button("← Back to Start"):  # Create back button with arrow
-        goto("step1")  # Navigate back to step 1
 
 # ------------------- RYAN GOSLING MODE -------------------
 # Ryan Gosling page: displays top-rated Ryan Gosling movies
