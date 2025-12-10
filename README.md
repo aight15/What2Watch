@@ -82,7 +82,7 @@ additional features:
   
 - **TV runtimes**: TMDB episode runtime metadata is inconsistent; filtering is limited by the API.
   
-- **Simple model**: The re‑ranker uses only genres, rating, and popularity — a pragmatic **hinting system** so it wont 100% fulfil the mood in which the user is. With the categories it tries to find out the preference but it could also be wrong.
+- **Simple model**: The re‑ranker uses only genres, rating, and popularity, a pragmatic **hinting system** so it wont 100% fulfil the mood in which the user is. With the categories it tries to find out the preference but it could also be wrong.
 
 - **Quantity of Categories**: There are also alot of categories which play a role in finding the right movie for the night. These categories also play a role for the recommendation but we had to limit ourselves to the central categories.
   
