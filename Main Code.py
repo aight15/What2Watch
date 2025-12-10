@@ -921,81 +921,87 @@ elif st.session_state.page == "results":
         
         
         st.write("")
-        # Creating button to restart and navigate back to step 1
+        # Creating button to restart and navigating back to step 1
         if st.button("Start Over"):
             goto("step1")
             st.rerun()
 
 # RANDOM MOVIE MODE
 # Random Movie page: displays a random popular movie with details
-elif st.session_state.page == "random":  # Check if current page is random
-    st.title("Random Movie Generator")  # Display page title
+# Displaying page title
+elif st.session_state.page == "random":
+    st.title("Random Movie Generator")
 
-    # Add spacing and back button
-    st.write("")  # Empty line for spacing
-    if st.button("← Back to Start"):  # Create back button with arrow
-        goto("step1")  # Navigate back to step 1
+    
+    st.write("")
+    # Creating back button with arrow and navigating back to step 1
+    if st.button("← Back to Start"):
+        goto("step1")
         st.rerun()
     
-    # Button to get a new random movie
-    if st.button("Give me another random movie!"):  # Create refresh button
-        st.rerun()  # Refresh page to get new random movie
+    # Creating refresh button to get a new random movie
+    if st.button("Give me another random movie!"):
+        st.rerun()
     
-    # Fetch and display random movie
-    random_movie = get_random_movie()  # Get random movie from TMDB
-    if random_movie:  # Check if movie was successfully fetched
-        title = random_movie.get("title")  # Get movie title
-        rating = random_movie.get("vote_average")  # Get IMDb rating
-        overview = random_movie.get("overview", "No description available.")  # Get overview (with default)
-        poster_path = random_movie.get("poster_path")  # Get poster image path
-        poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None  # Build full poster URL (larger size: w500)
-        movie_id = random_movie.get("id")  # Get TMDB movie ID
-        release_year = random_movie.get("release_date", "")[:4]  # Extract year from release date (first 4 characters)
-        trailer_url = get_trailer(movie_id, "movie")  # Fetch trailer URL
+    # Getting and displaying random movie
+    random_movie = get_random_movie()
+    if random_movie:
+        title = random_movie.get("title")
+        rating = random_movie.get("vote_average")
+        overview = random_movie.get("overview", "No description available.")
+        poster_path = random_movie.get("poster_path")
+        poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+        movie_id = random_movie.get("id")
+        release_year = random_movie.get("release_date", "")[:4]
+        trailer_url = get_trailer(movie_id, "movie")
 
-        # Display movie details
-        st.markdown(f"## {title} ({release_year})")  # Display title as h2 header with year
-        if poster_url:  # Check if poster URL exists
-            st.image(poster_url, width=300)  # Display larger poster image
-        st.markdown(f"### IMDb Score: {rating}")  # Display rating as h3 header
-        st.markdown(f"Overview: {overview}")  # Display overview text
-        if trailer_url:  # Check if trailer URL exists
-            st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)  # Display trailer link as h3 header
-    else:  # Movie fetch failed
-        st.warning("Could not fetch a random movie. Try again!")  # Show warning message
+        # Displaying movie details
+        st.markdown(f"## {title} ({release_year})")
+        if poster_url:
+            st.image(poster_url, width=300)
+        st.markdown(f"### IMDb Score: {rating}")
+        st.markdown(f"Overview: {overview}")
+        if trailer_url:
+            st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+    else:
+        # Getting movies failed so warning is showed
+        st.warning("Could not fetch a random movie. Try again!")
 
-# ------------------- RYAN GOSLING MODE -------------------
+# RYAN GOSLING MODE
 # Ryan Gosling page: displays top-rated Ryan Gosling movies
-elif st.session_state.page == "gosling":  # Check if current page is gosling
-    st.title("Ryan Gosling Recommendations")  # Display page title
-    gosling_movies = get_ryan_gosling_movies()  # Fetch Ryan Gosling's top movies
-    if gosling_movies:  # Check if movies were successfully fetched
-        st.markdown("Sorted by IMDb Score (Highest First)")  # Display sorting information
-        # Loop through each movie in the results
-        for movie in gosling_movies:  # Iterate through movie list
-            title = movie.get("title")  # Get movie title
-            rating = movie.get("vote_average")  # Get IMDb rating
-            overview = movie.get("overview", "No description available.")  # Get overview (with default)
-            poster_path = movie.get("poster_path")  # Get poster image path
-            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None  # Build full poster URL if path exists
-            movie_id = movie.get("id")  # Get TMDB movie ID
-            release_year = movie.get("release_date", "")[:4]  # Extract year from release date (first 4 characters)
-            trailer_url = get_trailer(movie_id, "movie")  # Fetch trailer URL
+# Displaying page title
+elif st.session_state.page == "gosling":
+    st.title("Ryan Gosling Recommendations")
+    # Getting Ryan Gosling's top movies
+    gosling_movies = get_ryan_gosling_movies()
+    if gosling_movies:
+        st.markdown("Sorted by IMDb Score (Highest First)")
+        # Looping through each movie in the results to get needed data
+        for movie in gosling_movies:
+            title = movie.get("title")
+            rating = movie.get("vote_average")
+            overview = movie.get("overview", "No description available.")
+            poster_path = movie.get("poster_path")
+            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None
+            movie_id = movie.get("id")
+            release_year = movie.get("release_date", "")[:4]
+            trailer_url = get_trailer(movie_id, "movie")
 
-            # Display movie details
-            st.markdown(f"**{title}** ({release_year})")  # Display bold title with year
-            if poster_url:  # Check if poster URL exists
-                st.image(poster_url, width=150)  # Display poster image
-            st.markdown(f"IMDb Score: {rating}")  # Display rating
-            st.caption(overview)  # Display movie overview
-            if trailer_url:  # Check if trailer URL exists
-                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)  # Display trailer link
-            st.markdown("---")  # Display horizontal divider
-    else:  # No movies found
-        st.warning("No Ryan Gosling movies found.")  # Show warning message
-
-    # Add spacing and back button
-    st.write("")  # Empty line for spacing
-    if st.button("← Back to Start"):  # Create back button with arrow
-        goto("step1")  # Navigate back to step 1
+            # Displaying movie details
+            st.markdown(f"**{title}** ({release_year})")
+            if poster_url:
+                st.image(poster_url, width=150)
+            st.markdown(f"IMDb Score: {rating}")
+            st.caption(overview)
+            if trailer_url:
+                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
+            st.markdown("---")
+    else:
+        # Getting movies failed so warning is showed
+        st.warning("No Ryan Gosling movies found.")
+    
+    st.write("")
+    # Creating back button and navigating back to step 1
+    if st.button("← Back to Start"):
+        goto("step1")
         st.rerun()
