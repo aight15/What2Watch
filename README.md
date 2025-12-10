@@ -67,7 +67,7 @@ What2Watch uses a simple personalized recommendation system that learns from eac
 
 4. **Result Page**:
 Per‑genre sections with poster, score, overview of the movie, trailer link, and **Like/Dislike Button** for future Recommendations.
-You can also navigate with **Back** and **Next** to change certain preferences and to check the Questions again
+You can also navigate with **Back** and **Next** to change certain preferences and to check the Questions again.
 
 Details:
 - **Sidebar quiz**: Quick checkboxes for known titles; computes a per‑genre score and draws a polar **radar chart** for guidance. fileciteturn1file3
@@ -98,12 +98,12 @@ Details:
 
 ## Disclosures & Credits
 
-- ChatGPT was used to generate the general structure, to add to the ideas we had. it helped us to bring our Ideas into a line of Code, from where we could continue to build our Webpage
+- ChatGPT was used to generate the general structure, to add to the ideas we had. it helped us to bring our Ideas into a line of Code, from where we could continue to build our Webpage.
 
-- ChatGPT helped us to add knowledge about specific functions, so we could use the knowledge to implement it to our Code
+- ChatGPT helped us to add knowledge about specific functions, so we could use the knowledge to implement it to our Code.
 
 - Excluding the general structure, AI was only used for high-level guidance advice, suggestions for structuring Code so the overview of the Code was clear and structure.
-It was also used for Implementation tips. So anytime ChatGPT was used we noted that part in our source comments with a tag
+It was also used for Implementation tips. So anytime ChatGPT was used we noted that part in our source comments with a tag.
 
 - Familiy and Friends of the Group added their knowledge with tips and tricks to improve our Web applications for unanswered Questions about functionality.
 
