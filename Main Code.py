@@ -94,7 +94,7 @@ for s in series:  # Loop through each series in the list
 # Initialization of all genre scores to zero
 genre_scores = {g: 0 for g in genres}
 
-# Calculatation of total score for each genre based on selected titles
+# Calculation of total score for each genre based on selected titles
 # Looping through each title which the user selected and looping through each genre
 # Adding genre value from title to total score
 for title in selected_titles:
