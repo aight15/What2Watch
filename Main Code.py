@@ -964,7 +964,7 @@ elif st.session_state.page == "random":
         if trailer_url:
             st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)
     else:
-        # Getting movies failed so warning is showed
+        # Getting movies failed so warning is shown
         st.warning("Could not fetch a random movie. Try again!")
 
 # RYAN GOSLING MODE
