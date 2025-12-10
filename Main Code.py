@@ -31,7 +31,7 @@ def goto(page_name):
 
 # SIDE BAR
 # Displaying sidebar instructions for the genre preference
-st.sidebar.markdown("Uncertain which genre you like? Select below which movies and series you've enjoyed and figure out what your prefered genre is.")
+st.sidebar.markdown("Uncertain which genre you like? Select below which movies and series you've enjoyed and figure out what your preferred genre is.")
 
 # Definition of predefined lists of movies for genre analysis
 movies = [
