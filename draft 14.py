@@ -545,9 +545,9 @@ elif st.session_state.page == "step2":  # Check if current page is step2
         
         st.markdown(f"**Which genre are you interested in?** {preferred_genre_text}")  # Display question with genre hint
         if content_type == "Film":  # User wants only movies
-             genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for genres (hidden label)
+             genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for Movie genres (hidden label)
         elif content_type == "Series":  # User wants only series
-            genre_choice = st.multiselect("", options=list(TV_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for genres (hidden label)
+            genre_choice = st.multiselect("", options=list(TV_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for TV genres (hidden label)
        
 
         # Popularity type preference
