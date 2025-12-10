@@ -392,32 +392,35 @@ def get_trailer(content_id, content_type="movie"):
 # Function to load user's liked movies from JSON file
 def load_liked_movies():
     """Load user's liked movies from JSON file"""
-    try:  # Trying to load the file
-        if Path("liked_movies.json").exists():  # Check if file exists
-            with open("liked_movies.json", "r") as f:  # Open file for reading
-                data = json.load(f)  # Parse JSON data
-                # Filter out invalid entries (strings, etc.)
-                return [m for m in data if isinstance(m, dict) and "id" in m and m.get("liked") == True]  # Return only valid liked movies
-        return []  # Return empty list if file doesn't exist
-    except (FileNotFoundError, json.JSONDecodeError):  # Catch file or JSON errors
+    try:
+        # Check if file exists and opening of file
+        if Path("liked_movies.json").exists():
+            with open("liked_movies.json", "r") as f:
+                data = json.load(f)
+                # Filtering out invalid entries (strings, etc.) to return only valid liked movies
+                return [m for m in data if isinstance(m, dict) and "id" in m and m.get("liked") == True]
+        return []
+        # Catching of error and return of empty list if error occurs
+    except (FileNotFoundError, json.JSONDecodeError):
         return []  # Return empty list if error occurs
 
 # Function to save a liked or disliked movie to the JSON file
 def save_liked_movie(movie_id, title, genres, rating, liked=True):
     """Save a liked/disliked movie to the JSON file"""
-    try:  # Try to save the data
-        if Path("liked_movies.json").exists():  # Check if file exists
-            with open("liked_movies.json", "r") as f:  # Open file for reading
-                data = json.load(f)  # Parse existing JSON data
-                # Filter out invalid entries
-                data = [m for m in data if isinstance(m, dict) and "id" in m]  # Keep only valid entries
-        else:  # File doesn't exist
-            data = []  # Start with empty list
+    try:
+        # Check if file exists and opening of file for reading
+        if Path("liked_movies.json").exists():
+            with open("liked_movies.json", "r") as f:
+                data = json.load(f)
+                # Filtering out invalid entries and keeping only valid entries
+                data = [m for m in data if isinstance(m, dict) and "id" in m]
+        else:
+            data = []
         
-        # Remove existing entry for this movie if present
+        # Removing existing entry for this movie if present
         data = [m for m in data if m.get("id") != movie_id]  # Filter out this movie ID
         
-        # Add new entry
+        # Adding the new entry
         data.append({
             "id": movie_id,  # Movie's TMDB ID
             "title": title,  # Movie title
@@ -426,165 +429,179 @@ def save_liked_movie(movie_id, title, genres, rating, liked=True):
             "liked": liked  # Whether user liked (True) or disliked (False)
         })
         
-        # Save updated data to file
-        with open("liked_movies.json", "w") as f:  # Open file for writing
-            json.dump(data, f, indent=2)  # Write JSON with pretty formatting
-    except Exception as e:  # Catch any errors
-        st.error(f"Error saving preference: {e}")  # Display error message to user
+        # Saving of updated data to file
+        with open("liked_movies.json", "w") as f:
+            json.dump(data, f, indent=2)
+    # Catching of errors and displaying error message if error occurs         
+    except Exception as e:
+        st.error(f"Error saving preference: {e}")
 
 # Function to create a feature vector for machine learning
 def create_movie_feature_vector(movie):
     """Create a feature vector for a movie based on genres, rating, and popularity"""
-    # Get all possible genre IDs from both MOVIE_GENRE_MAP and TV_GENRE_MAP
+    # Getting all possible genre IDs
+    # Genre IDs from both MOVIE_GENRE_MAP and TV_GENRE_MAP
     all_genre_ids = list(set(list(MOVIE_GENRE_MAP.values()) + list(TV_GENRE_MAP.values())))
     
-    # Create genre vector (binary: 1 if movie has genre, 0 otherwise)
-    movie_genres = movie.get("genre_ids", [])  # Get list of genre IDs for this movie
-    genre_vector = [1 if genre_id in movie_genres else 0 for genre_id in all_genre_ids]  # Create binary vector
+    # Creation of genre vector
+    movie_genres = movie.get("genre_ids", [])
+    genre_vector = [1 if genre_id in movie_genres else 0 for genre_id in all_genre_ids]
     
-    # Normalize rating (0-10 scale, normalize to 0-1)
-    rating = movie.get("vote_average", 5.0) / 10.0  # Divide by 10 to get value between 0 and 1
+    # Normalization of rating
+    rating = movie.get("vote_average", 5.0) / 10.0
     
-    # Normalize popularity (using a simple log transform to reduce scale)
-    popularity = movie.get("popularity", 0)  # Get popularity score
-    popularity_normalized = np.log1p(popularity) / 20.0  # Apply log transform and scale down
+    # Normalization of popularity
+    popularity = movie.get("popularity", 0)
+    popularity_normalized = np.log1p(popularity) / 20.0
     
-    # Combine all features into single vector
-    feature_vector = genre_vector + [rating, popularity_normalized]  # Concatenate genre, rating, popularity
-    return np.array(feature_vector)  # Convert to numpy array for ML operations
+    # Combination of all features into single vector for ML operation
+    feature_vector = genre_vector + [rating, popularity_normalized]
+    return np.array(feature_vector)
 
 # Function to reorder movies based on user preferences using ML
+# Goal to improve user's movies/series suggestions
 def reorder_movies_by_preference(movies, liked_movies_list):
     """Re-order movies based on similarity to user's liked movies using cosine similarity"""
-    if not liked_movies_list or not movies:  # Check if we have data to work with
-        return movies  # Return original order if no liked movies or no movies to sort
+    if not liked_movies_list or not movies:
+        return movies
     
-    # Create feature vectors for liked movies
-    liked_vectors = []  # Initialize empty list for vectors
-    for liked_movie in liked_movies_list:  # Loop through each liked movie
-        # Reconstruct movie dict from saved data
+    # Creation of vectors for liked movies
+    # Loop through each liked movie
+    liked_vectors = []
+    for liked_movie in liked_movies_list:
+        # Reconstruct movie dictionary from saved data
+        # Getting saved genre IDs and rating
         movie_dict = {
             "genre_ids": liked_movie.get("genres", []),  # Get saved genre IDs
             "vote_average": liked_movie.get("rating", 5.0),  # Get saved rating
             "popularity": 50.0  # Default popularity if not stored
         }
-        liked_vectors.append(create_movie_feature_vector(movie_dict))  # Create and add feature vector
+        # Creation and addition of feature vector
+        liked_vectors.append(create_movie_feature_vector(movie_dict))
+
+    # Check of created vector and return of original order if no vector was created
+    if not liked_vectors:
+        return movies
     
-    if not liked_vectors:  # Check if we successfully created vectors
-        return movies  # Return original order if no vectors created
+    # Creation of user preference profile by average of liked movie vector
+    user_profile = np.mean(liked_vectors, axis=0)
     
-    # Average the liked movie vectors to create a user preference profile
-    user_profile = np.mean(liked_vectors, axis=0)  # Calculate mean of all liked movie vectors
+    # Calculation of similarity scores to ensure comparability
+    # Loop through each movie and creation of vector
+    movie_scores = [] 
+    for movie in movies:
+        movie_vector = create_movie_feature_vector(movie)
+        # Calculation of similarity between user profile and movie
+        # Addition of movie and its score to list
+        similarity = cosine_similarity([user_profile], [movie_vector])[0][0]
+        movie_scores.append((movie, similarity))
     
-    # Calculate similarity scores for candidate movies
-    movie_scores = []  # Initialize empty list for movie-score pairs
-    for movie in movies:  # Loop through each candidate movie
-        movie_vector = create_movie_feature_vector(movie)  # Create feature vector for this movie
-        # Calculate cosine similarity between user profile and movie
-        similarity = cosine_similarity([user_profile], [movie_vector])[0][0]  # Get similarity score (0-1)
-        movie_scores.append((movie, similarity))  # Add movie and its score to list
+    # Sorting of scores by similarity with highest score first
+    movie_scores.sort(key=lambda x: x[1], reverse=True)
     
-    # Sort by similarity (highest first)
-    movie_scores.sort(key=lambda x: x[1], reverse=True)  # Sort by second element (similarity) descending
-    
-    # Return reordered movies
+    # Return of reordered movies
     return [movie for movie, score in movie_scores]  # Extract just the movies in sorted order
 
-# Initialize preferences dictionary in session state
-if "preferences" not in st.session_state:  # Check if preferences exists in session
-    st.session_state.preferences = {}  # Create empty dictionary for storing user preferences
+# Initialization of preferences dictionary for storing user preferences
+if "preferences" not in st.session_state:
+    st.session_state.preferences = {}
 
-# Function to display centered buttons for special features
+# Display of buttons for special features (random, Ryan Gosling)
 def special_buttons():
     """Displays centered/symmetrical buttons in Streamlit to navigate to Random Movie or Ryan Gosling pages"""
-    col1, col2, col3 = st.columns([2, 3, 2])  # Create three columns with specific width ratios
-    with col1:  # Use left column
-        if st.button("Random Movie", key="random_btn", use_container_width=True):  # Create full-width button
-            goto("random")  # Navigate to random movie page
+    col1, col2, col3 = st.columns([2, 3, 2])
+    with col1:
+        if st.button("Random Movie", key="random_btn", use_container_width=True):
+            goto("random")
             st.rerun()
-    with col3:  # Use right column
-        if st.button("Ryan Gosling", key="gosling_btn", use_container_width=True):  # Create full-width button
-            goto("gosling")  # Navigate to Ryan Gosling page
+    with col3:
+        if st.button("Ryan Gosling", key="gosling_btn", use_container_width=True):
+            goto("gosling")
             st.rerun()
 
 # STEP 1
-# Step 1 of the form: asks user for content type
-if st.session_state.page == "step1":  # Check if current page is step1
-    special_buttons()  # Display Random Movie and Ryan Gosling buttons
-    st.title("What2Watch")  # Display main title
-    with st.form("step1_form"):  # Create form to group inputs
-        content_type = st.radio("Do you want to watch a movie or a serie?", ["Film", "Series"])  # Radio buttons for content type
-        next_button = st.form_submit_button("Next")  # Submit button
-    if next_button:  # Check if user clicked Next
-        st.session_state.preferences["content_type"] = content_type  # Save content type to session
-        goto("step2")  # Navigate to step 2
+# Step 1: Asking user for content type (Film, Serie)
+# Display of Random Movie and Ryan Gosling buttons
+if st.session_state.page == "step1":
+    special_buttons()
+    st.title("What2Watch")
+    with st.form("step1_form"):
+        content_type = st.radio("Do you want to watch a movie or a serie?", ["Film", "Series"])
+        next_button = st.form_submit_button("Next")
+    if next_button:
+        st.session_state.preferences["content_type"] = content_type
+        goto("step2")
         st.rerun()
 
-# ------------------- STEP 2 -------------------
-# Step 2 of the form: collects all user preferences
-elif st.session_state.page == "step2":  # Check if current page is step2
-    special_buttons()  # Display Random Movie and Ryan Gosling buttons
-    with st.form("step2_form"):  # Create form to group inputs
-        content_type = st.session_state.preferences.get("content_type", "Film")  # Get content type from session
+# STEP 2
+# Step 2: Collection of all user preferences
+# Display of Random Movie and Ryan Gosling buttons
+elif st.session_state.page == "step2":
+    special_buttons()
+    with st.form("step2_form"):
+        content_type = st.session_state.preferences.get("content_type", "Film")
         
-        # Length preference - varies based on content type
-        if content_type == "Film":  # User wants only movies
-            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)", "Any length"])  # Movie length options
-        elif content_type == "Series":  # User wants only series
-            length = st.radio("Preferred episode length:", ["< 30 min", "30–60 min", "60+ min", "Any length"])  # Episode length options
+        # Preference of length based on content type
+        if content_type == "Film":
+            length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)", "Any length"])
+        elif content_type == "Series":
+            length = st.radio("Preferred episode length:", ["< 30 min", "30–60 min", "60+ min", "Any length"])
 
-        # Animation preference
-        animation_preference = st.radio("Would you prefer animated or live-action?", ["Animated", "Live-action", "Both"])  # Radio buttons for animation type
+        # Preference of animation or live-action
+        animation_preference = st.radio("Would you prefer animated or live-action?", ["Animated", "Live-action", "Both"])
         
-        # Modern or classic preference
-        modern_or_classic = st.radio("Modern or classic?", ["Modern (2010+)", "Classic (before 2010)", "Doesn't matter"])  # Radio buttons for era preference
+        # Preference of modern or classic
+        modern_or_classic = st.radio("Modern or classic?", ["Modern (2010+)", "Classic (before 2010)", "Doesn't matter"])
         
-        # Genre selection with preferred genre hint
-        # Determine preferred genre from sidebar if any titles selected
-        preferred_genre_text = ""  # Initialize empty string for genre hint
-        if selected_titles:  # Check if user selected any titles in sidebar
-            max_score = max(genre_scores.values())  # Find highest genre score
-            if max_score > 0:  # Check if any genre has a score
-                top_genres = [g for g, score in genre_scores.items() if score == max_score]  # Get all genres with max score
-                if len(top_genres) == 1:  # Only one top genre
-                    preferred_genre_text = f"(Your preferred genre is **{top_genres[0]}**)"  # Show singular message
+        # Selection of genre with preferred genre hint from the sidebar
+        # Determination of preferred genre from sidebar if any titles selected
+        preferred_genre_text = ""
+        if selected_titles:
+            max_score = max(genre_scores.values())
+            if max_score > 0:
+                top_genres = [g for g, score in genre_scores.items() if score == max_score]
+                if len(top_genres) == 1:
+                    preferred_genre_text = f"(Your preferred genre is **{top_genres[0]}**)"
                 else:  # Multiple top genres
-                    preferred_genre_text = f"(Your preferred genres are **{', '.join(top_genres)}**)"  # Show plural message with comma-separated list
-        
-        st.markdown(f"**Which genre are you interested in?** {preferred_genre_text}")  # Display question with genre hint
-        if content_type == "Film":  # User wants only movies
-             genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for Movie genres (hidden label)
-        elif content_type == "Series":  # User wants only series
-            genre_choice = st.multiselect("", options=list(TV_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for TV genres (hidden label)
+                    preferred_genre_text = f"(Your preferred genres are **{', '.join(top_genres)}**)"
+
+        # Selection of genres
+        # Options depend on content type
+        st.markdown(f"**Which genre are you interested in?** {preferred_genre_text}")
+        if content_type == "Film":
+             genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")
+        elif content_type == "Series":
+            genre_choice = st.multiselect("", options=list(TV_GENRE_MAP.keys()), label_visibility="collapsed")
        
 
-        # Popularity type preference
+        # Preference of popularity
         popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])  # Radio buttons for popularity
 
-        # Actor/director input (optional)
-        actor_or_director = st.text_input("Any actors or directors you love? (optional)")  # Text input for favorite person
+        # Optional addition of actor/director
+        actor_or_director = st.text_input("Any actors or directors you love? (optional)")
 
-        # Navigation buttons in two columns
-        col1, col2 = st.columns(2)  # Create two equal columns
-        with col1:  # Left column
-            back_button = st.form_submit_button("Back")  # Back button
-        with col2:  # Right column
-            next_button = st.form_submit_button("Next")  # Next button
+        # Navigation of buttons
+        col1, col2 = st.columns(2)
+        with col1:
+            back_button = st.form_submit_button("Back")
+        with col2:
+            next_button = st.form_submit_button("Next")
 
-    # Handle button clicks
-    if next_button:  # User clicked Next
-        st.session_state.preferences.update({  # Update preferences dictionary with all selections
-            "length": length,  # Save length preference
-            "animation_preference": animation_preference,  # Save animation preference
-            "modern_or_classic": modern_or_classic,  # Save era preference
-            "genres": genre_choice,  # Save selected genres
-            "popularity_type": popularity_type,  # Save popularity preference
-            "favorite_person": actor_or_director  # Save favorite actor/director
+    # Saving of user preferences and update of preference state
+    # Navigation to result page and generated recommendations
+    if next_button:
+        st.session_state.preferences.update({
+            "length": length,
+            "animation_preference": animation_preference,
+            "modern_or_classic": modern_or_classic,
+            "genres": genre_choice,
+            "popularity_type": popularity_type,
+            "favorite_person": actor_or_director
         })
-        goto("results")  # Navigate to results page
+        goto("results")
         st.rerun()
-    elif back_button:  # User clicked Back
-        goto("step1")  # Navigate back to step 1
+    elif back_button:
+        goto("step1")
         st.rerun()
 
 # ------------------- RESULTS -------------------
