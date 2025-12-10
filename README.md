@@ -37,8 +37,7 @@ Likes are saved locally and used to re-rank future results.
 ---
 
 ### Machine Learing
-Each Recommendation based on the specified preferences has a like and dislike button next to it.
-The likes and Dislikes will re-rank the future results, so it won't just be deleted out of the Recommendations. The likes will appear on top of Future lists and the dislikes at the bottom
+What2Watch uses a simple personalized recommendation system that learns from each user’s likes and dislikes. Every movie or series is converted into a numerical profile based on its genres, rating, and popularity. When the user likes an item, this profile is saved and combined with previous likes to form a user preference model. New recommendations are then compared to this model, and the most similar items are shown at the top. Disliked items are noted and moved further down in future lists. As the user interacts with the app, the system continually improves and becomes better at predicting what the user will enjoy.
 
 ---
 
