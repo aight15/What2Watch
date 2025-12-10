@@ -1,7 +1,7 @@
 #In this block background of our streamlit platform receives a dark color
 [theme]
 base="dark"
-primaryColor="#1f77b4"
+primaryColor="#E50914"
 backgroundColor="#000000"
 secondaryBackgroundColor="#111111"
 textColor="#ffffff"
