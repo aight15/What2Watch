@@ -278,7 +278,7 @@ def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, ye
         if year_max:
             discover_params["primary_release_date.lte"] = f"{year_max}-12-31"
         
-        # Making the TMBD API request for movies and returning first movies
+        # Making the TMDB API request for movies and returning first movies
         movie_response = requests.get(discover_url, params=discover_params)
         if movie_response.status_code == 200:
             return movie_response.json().get("results", [])[:num_results]
