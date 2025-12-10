@@ -458,10 +458,12 @@ def special_buttons():
     col1, col2, col3 = st.columns([2, 3, 2])  # Create three columns with specific width ratios
     with col1:  # Use left column
         if st.button("Random Movie", key="random_btn", use_container_width=True):  # Create full-width button
-            goto("random")  # Navigate to random movie page
+            goto("random") # Navigate to random movie page
+            st.rerun()
     with col3:  # Use right column
         if st.button("Ryan Gosling", key="gosling_btn", use_container_width=True):  # Create full-width button
             goto("gosling")  # Navigate to Ryan Gosling page
+            st.rerun()
 
 # ------------------- STEP 1 -------------------
 # Step 1 of the form: asks user for content type
@@ -474,6 +476,7 @@ if st.session_state.page == "step1":  # Check if current page is step1
     if next_button:  # Check if user clicked Next
         st.session_state.preferences["content_type"] = content_type  # Save content type to session
         goto("step2")  # Navigate to step 2
+        st.rerun()
 
 # ------------------- STEP 2 -------------------
 # Step 2 of the form: collects all user preferences
@@ -543,8 +546,10 @@ elif st.session_state.page == "step2":  # Check if current page is step2
             "favorite_person": actor_or_director  # Save favorite actor/director
         })
         goto("results")  # Navigate to results page
+        st.rerun()
     elif back_button:  # User clicked Back
         goto("step1")  # Navigate back to step 1
+        st.rerun()
 
 # ------------------- RESULTS -------------------
 # Results page: displays personalized movie and series recommendations
@@ -852,7 +857,8 @@ elif st.session_state.page == "results":  # Check if current page is results
         # Add spacing before Start Over button
         st.write("")  # Empty line for spacing
         if st.button("Start Over"):  # Create button to restart
-            goto("step1")  # Navigate back to step 1
+            goto("step1") # Navigate back to step 1
+            st.rerun()
 
 # ------------------- RANDOM MOVIE MODE -------------------
 # Random Movie page: displays a random popular movie with details
@@ -863,6 +869,7 @@ elif st.session_state.page == "random":  # Check if current page is random
     st.write("")  # Empty line for spacing
     if st.button("← Back to Start"):  # Create back button with arrow
         goto("step1")  # Navigate back to step 1
+        st.rerun()
     
     # Button to get a new random movie
     if st.button("Give me another random movie!"):  # Create refresh button
@@ -925,3 +932,4 @@ elif st.session_state.page == "gosling":  # Check if current page is gosling
     st.write("")  # Empty line for spacing
     if st.button("← Back to Start"):  # Create back button with arrow
         goto("step1")  # Navigate back to step 1
+        st.rerun()
