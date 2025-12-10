@@ -62,11 +62,11 @@ title_genres = {
     "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},  # Sci-Fi/Drama/Action
     "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},  # Pure drama
     "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},  # Pure action
-    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0.5},  # Drama/Romance
+    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0.4},  # Drama/Romance
 
     "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},  # Drama/Action series
     "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},  # Horror/Sci-Fi/Action series
-    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0.5},  # Comedy/Romance series
+    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0.4},  # Comedy/Romance series
     "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},  # Pure comedy series
     "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},  # Drama/Action/Romance series
     "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},  # Sci-Fi/Drama series
