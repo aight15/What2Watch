@@ -54,15 +54,6 @@ What2Watch uses a simple personalized recommendation system that learns from eac
 ### User experience
 1. **Step 1**:
    Choose **Film**, **Series**, or **Both**.
-
-   Or there are also Options like:
-
-   **Random Movie**
-   As the name says, it will give you a random movie
-
-   **Ryan Gosling Button**
-   It will recommend the highest rated Ryan gosling Movies, because who doesn't
-   like Ryan Gosling ;)
    
 3. **Step 2**:
   Set runtime, animation vs. live‑action, modern vs. classic, genre(s), popularity, and an optional favorite actor/director. Sidebar quiz helps infer preferred genres and draws a radar chart.
@@ -71,11 +62,12 @@ What2Watch uses a simple personalized recommendation system that learns from eac
 Per‑genre sections with poster, score, overview of the movie, trailer link, and **Like/Dislike Button** for future Recommendations.
 You can also navigate with **Back** and **Next** to change certain preferences and to check the Questions again.
 
-Details:
-- **Sidebar quiz**: Quick checkboxes for known titles; computes a per‑genre score and draws a polar **radar chart** for guidance. fileciteturn1file3
-- **Results lists**: Each genre renders a compact card with poster, score, overview, trailer link, and Like/Dislike buttons. Re‑ranking applies when likes exist.
-- **Stateful pages**: Navigation managed in `st.session_state.page`.
-  
+additional features:
+- **Sidebar quiz**: Quick checkboxes for known titles; computes a per‑genre score and draws a polar **radar chart** for guidance.
+- **Random Movie**: As the name says, it will give you a random movie
+- **Ryan Gosling Button**: It will recommend the highest rated Ryan gosling Movies, because who doesn't
+   like Ryan Gosling ;)
+
 ---
 
 ## Database design
