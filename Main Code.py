@@ -109,7 +109,7 @@ values += values[:1]  # Duplicate first value at end to close the radar chart po
 # Calculation of number of genre axes for the chart
 num_vars = len(genres)
 
-# Calculatation of angle for each axis in radians
+# Calculation of angle for each axis in radians
 angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
 angles += angles[:1]
 
