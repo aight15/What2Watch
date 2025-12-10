@@ -97,7 +97,7 @@ additional features:
 - ChatGPT helped us to add knowledge about specific functions, so we could use the knowledge to implement it to our code.
 
 - Excluding the general structure, AI was only used for high-level guidance advice, suggestions for structuring code so the overview of the Code was clear and structure.
-It was also used for implementation tips. So anytime ChatGPT was used we noted that part in our source comments with a tag.
+It was also used for implementation tips.
 
 - Familiy and friends of the group added their knowledge with tips and tricks to improve our web applications for unanswered questions about functionality.
 
