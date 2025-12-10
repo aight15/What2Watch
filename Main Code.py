@@ -997,7 +997,7 @@ elif st.session_state.page == "gosling":
                 st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)
             st.markdown("---")
     else:
-        # Getting movies failed so warning is showed
+        # Getting movies failed so warning is shown
         st.warning("No Ryan Gosling movies found.")
     
     st.write("")
