@@ -267,126 +267,132 @@ def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, ye
             "language": "en-US"
         }
         
-        # Apply runtime filters if specified
-        if runtime_min:  # User specified minimum runtime
-            discover_params["with_runtime.gte"] = runtime_min  # Greater than or equal to min runtime
-        if runtime_max:  # User specified maximum runtime
-            discover_params["with_runtime.lte"] = runtime_max  # Less than or equal to max runtime
-        # Apply year filters if specified
-        if year_min:  # User specified earliest year
-            discover_params["primary_release_date.gte"] = f"{year_min}-01-01"  # Format as date (Jan 1)
-        if year_max:  # User specified latest year
-            discover_params["primary_release_date.lte"] = f"{year_max}-12-31"  # Format as date (Dec 31)
+        # Applying runtime filters if specified
+        if runtime_min:
+            discover_params["with_runtime.gte"] = runtime_min
+        if runtime_max:
+            discover_params["with_runtime.lte"] = runtime_max
+        # Applying year filters if specified
+        if year_min:
+            discover_params["primary_release_date.gte"] = f"{year_min}-01-01"
+        if year_max:
+            discover_params["primary_release_date.lte"] = f"{year_max}-12-31"
         
-        # Make the API request for movies
-        movie_response = requests.get(discover_url, params=discover_params)  # Send GET request to TMDB
-        if movie_response.status_code == 200:  # Check if request was successful
-            return movie_response.json().get("results", [])[:num_results]  # Return first num_results movies
-    return []  # Return empty list if search or request failed
+        # Making the TMBD API request for movies and returning first movies
+        movie_response = requests.get(discover_url, params=discover_params)
+        if movie_response.status_code == 200:
+            return movie_response.json().get("results", [])[:num_results]
+    return []  # Returning empty list if search or request failed
 
 # Function to fetch TV series featuring a specific actor
 def get_series_by_actor(name, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     """Fetches TV series from TMDB featuring a given actor, with optional filters for first air date"""
-    # First, search for the person by name
-    search_url = f"{TMDB_BASE_URL}/search/person"  # Build URL for person search endpoint
+    # First, searching for the person by name
+    search_url = f"{TMDB_BASE_URL}/search/person"  # Building URL for person search endpoint
     search_params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "query": name,  # Person's name to search for
-        "language": "en-US"  # Request English language results
+        "api_key": TMDB_API_KEY,
+        "query": name,
+        "language": "en-US"  # Requesting English language results
     }
-    response = requests.get(search_url, params=search_params)  # Send GET request to search for person
-    if response.status_code == 200 and response.json()["results"]:  # Check if search was successful and has results
-        person_id = response.json()["results"][0]["id"]  # Get the ID of the first matching person
-        # Now search for TV series featuring this person
-        discover_url = f"{TMDB_BASE_URL}/discover/tv"  # Build URL for TV discovery endpoint
+    # Sending request to search for person and getting the ID of the first matching person
+    response = requests.get(search_url, params=search_params)
+    if response.status_code == 200 and response.json()["results"]:
+        person_id = response.json()["results"][0]["id"]
+        # Searching for TV series featuring this person and building URL for TV discovery
+        discover_url = f"{TMDB_BASE_URL}/discover/tv"
         discover_params = {
-            "api_key": TMDB_API_KEY,  # Authentication key
-            "with_cast": person_id,  # Filter by person ID in cast
-            "sort_by": "popularity.desc",  # Sort by popularity
-            "vote_count.gte": 30,  # Minimum votes filter (lower for TV)
-            "language": "en-US"  # Request English language results
+            "api_key": TMDB_API_KEY,
+            "with_cast": person_id,
+            "sort_by": "popularity.desc",
+            "vote_count.gte": 30,
+            "language": "en-US"
         }
         
-        # Apply year filters if specified
-        if year_min:  # User specified earliest air date
-            discover_params["first_air_date.gte"] = f"{year_min}-01-01"  # Format as date (Jan 1)
-        if year_max:  # User specified latest air date
-            discover_params["first_air_date.lte"] = f"{year_max}-12-31"  # Format as date (Dec 31)
+        # Applying year filters if specified by user
+        if year_min:
+            discover_params["first_air_date.gte"] = f"{year_min}-01-01"
+        if year_max:
+            discover_params["first_air_date.lte"] = f"{year_max}-12-31"
         
-        # Make the API request for series
-        series_response = requests.get(discover_url, params=discover_params)  # Send GET request to TMDB
-        if series_response.status_code == 200:  # Check if request was successful
-            return series_response.json().get("results", [])[:num_results]  # Return first num_results series
-    return []  # Return empty list if search or request failed
+        # Making the TMDB API request for series
+        series_response = requests.get(discover_url, params=discover_params)
+        if series_response.status_code == 200:
+            return series_response.json().get("results", [])[:num_results]  # Returning first num_results series
+    return []  # Returning empty list if search or request failed
 
 # Function to fetch Ryan Gosling's top-rated movies
 def get_ryan_gosling_movies():
     """Fetches the top 10 highest-rated Ryan Gosling movies from TMDB, sorted by average vote"""
-    # First, search for Ryan Gosling
-    search_url = f"{TMDB_BASE_URL}/search/person"  # Build URL for person search endpoint
+    # First, searching for Ryan Gosling
+    search_url = f"{TMDB_BASE_URL}/search/person"  # Building URL for person search
     search_params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "query": "Ryan Gosling",  # Hardcoded search for Ryan Gosling
-        "language": "en-US"  # Request English language results
+        "api_key": TMDB_API_KEY,
+        "query": "Ryan Gosling",
+        "language": "en-US"
     }
-    person_response = requests.get(search_url, params=search_params)  # Send GET request to search for Ryan Gosling
-    if person_response.status_code == 200 and person_response.json()['results']:  # Check if search was successful
-        gosling_id = person_response.json()['results'][0]['id']  # Get Ryan Gosling's TMDB ID
-        # Now get movies featuring Ryan Gosling
-        movie_url = f"{TMDB_BASE_URL}/discover/movie"  # Build URL for movie discovery endpoint
+    person_response = requests.get(search_url, params=search_params)  # Sending GET request to search for Ryan Gosling
+    if person_response.status_code == 200 and person_response.json()['results']:
+        gosling_id = person_response.json()['results'][0]['id']
+        # Getting movies featuring Ryan Gosling
+        movie_url = f"{TMDB_BASE_URL}/discover/movie"  # Building URL for movie discovery
         movie_params = {
-            "api_key": TMDB_API_KEY,  # Authentication key
-            "with_cast": gosling_id,  # Filter by Ryan Gosling's ID
-            "sort_by": "vote_count.desc",  # Sort by number of votes initially
-            "vote_count.gte": 50,  # Minimum votes filter
-            "language": "en-US"  # Request English language results
+            "api_key": TMDB_API_KEY,
+            "with_cast": gosling_id,
+            "sort_by": "vote_count.desc",
+            "vote_count.gte": 50,
+            "language": "en-US"
         }
-        movie_response = requests.get(movie_url, params=movie_params)  # Send GET request to TMDB
-        if movie_response.status_code == 200:  # Check if request was successful
-            movies = movie_response.json().get("results", [])  # Get list of movies
-            sorted_movies = sorted(movies, key=lambda x: x.get("vote_average", 0), reverse=True)  # Sort by rating (highest first)
-            return sorted_movies[:10]  # Return top 10 highest-rated movies
-    return []  # Return empty list if search or request failed
+        # Sending request to TMDB and getting list of 10 movies if successful
+        movie_response = requests.get(movie_url, params=movie_params)
+        if movie_response.status_code == 200:
+            movies = movie_response.json().get("results", [])
+            sorted_movies = sorted(movies, key=lambda x: x.get("vote_average", 0), reverse=True)
+            return sorted_movies[:10]
+    return []  # Returning empty list if search or request failed
 
-# Function to get a random popular movie
+# Function to get a random popular movie and building URL for popular movies
 def get_random_movie():
     """Get a truly random popular movie by selecting a random results page and movie"""
-    random_page = random.randint(1, 50)  # Generate random page number between 1 and 50
-    url = f"{TMDB_BASE_URL}/movie/popular"  # Build URL for popular movies endpoint
+    random_page = random.randint(1, 50)
+    url = f"{TMDB_BASE_URL}/movie/popular"
     params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "language": "en-US",  # Request English language results
-        "page": random_page  # Use the random page number
+        "api_key": TMDB_API_KEY,
+        "language": "en-US",
+        "page": random_page
     }
-    response = requests.get(url, params=params)  # Send GET request to TMDB
-    if response.status_code == 200:  # Check if request was successful
-        results = response.json().get("results", [])  # Get list of movies from that page
-        if results:  # If page has results
-            return random.choice(results)  # Return a random movie from the page
-    return None  # Return None if request failed or no results
+    # Sending request to TMDB and checking if request was successful for getting list of movies from that page
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        results = response.json().get("results", [])
+        # If the page has results it returns a random movie from the page
+        if results:
+            return random.choice(results)
+    return None  # Returning nothing if request failed or no results
 
-# Function to fetch trailer URL for a movie or TV show
+# Function to fetch trailer URL for a movie or TV show and building URL for videos
 def get_trailer(content_id, content_type="movie"):
     """Fetches the YouTube trailer URL for a given movie or TV show from TMDB"""
-    url = f"{TMDB_BASE_URL}/{content_type}/{content_id}/videos"  # Build URL for videos endpoint
+    url = f"{TMDB_BASE_URL}/{content_type}/{content_id}/videos"
     params = {
-        "api_key": TMDB_API_KEY,  # Authentication key
-        "language": "en-US"  # Request English language results
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
     }
-    response = requests.get(url, params=params)  # Send GET request to TMDB
-    if response.status_code == 200:  # Check if request was successful
-        videos = response.json().get("results", [])  # Get list of videos
-        for video in videos:  # Loop through each video
-            if video["site"] == "YouTube" and video["type"] == "Trailer":  # Check if it's a YouTube trailer
-                return f"https://www.youtube.com/watch?v={video['key']}"  # Return YouTube URL
-    return None  # Return None if no trailer found
+    # Sending request to TMDB and checking if request was successful for getting list of videos
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        videos = response.json().get("results", [])
+        # Looping through each video and checking if it's a YouTube trailer which will return the YouTube URL
+        for video in videos:
+            if video["site"] == "YouTube" and video["type"] == "Trailer":
+                return f"https://www.youtube.com/watch?v={video['key']}"
+    return None  # Returning nothing if no trailer found
 
 
-# ------------------- MACHINE LEARNING COMPONENT -------------------
+# MACHINE LEARNING COMPONENT
 # Function to load user's liked movies from JSON file
 def load_liked_movies():
     """Load user's liked movies from JSON file"""
-    try:  # Try to load the file
+    try:  # Trying to load the file
         if Path("liked_movies.json").exists():  # Check if file exists
             with open("liked_movies.json", "r") as f:  # Open file for reading
                 data = json.load(f)  # Parse JSON data
@@ -501,7 +507,7 @@ def special_buttons():
             goto("gosling")  # Navigate to Ryan Gosling page
             st.rerun()
 
-# ------------------- STEP 1 -------------------
+# STEP 1
 # Step 1 of the form: asks user for content type
 if st.session_state.page == "step1":  # Check if current page is step1
     special_buttons()  # Display Random Movie and Ryan Gosling buttons
