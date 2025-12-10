@@ -778,7 +778,12 @@ elif st.session_state.page == "results":
 # Displays a random movie with its details and trailer, with options to refresh or return to the start
 elif st.session_state.page == "random":
     st.title("Random Movie Generator")
-    
+
+    st.write("")  
+    if st.button("← Back to Start"):
+        goto("step1")
+        st.rerun()
+
     if st.button("Give me another random movie!"):
         st.rerun()
     
@@ -802,11 +807,6 @@ elif st.session_state.page == "random":
             st.markdown(f"### [Watch Trailer]({trailer_url})", unsafe_allow_html=True)
     else:
         st.warning("Could not fetch a random movie. Try again!")
-
-    st.write("")  
-    if st.button("← Back to Start"):
-        goto("step1")
-        st.rerun()
 
 # ------------------- RYAN GOSLING MODE -------------------
 # Displays a list of Ryan Gosling's highest-rated movies with posters, overviews and trailers
