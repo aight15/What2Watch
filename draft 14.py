@@ -148,13 +148,11 @@ TV_GENRE_MAP = {
     "Action": 10759,      # Action & Adventure
     "Comedy": 35,
     "Drama": 18,
-    "Romance": 10749,
-    "Horror": 9648,       # Mystery (closest to Horror for TV)
     "Sci-Fi": 10765,      # Sci-Fi & Fantasy
     "Documentary": 99,
     "Animation": 16,
     "Mystery": 9648,
-    "Thriller": 9648      # Mystery (closest to Thriller for TV)
+    "Crime": 80
 }
 
 # ------------------- TMDB API FUNCTIONS -------------------
@@ -546,8 +544,12 @@ elif st.session_state.page == "step2":  # Check if current page is step2
                     preferred_genre_text = f"(Your preferred genres are **{', '.join(top_genres)}**)"  # Show plural message with comma-separated list
         
         st.markdown(f"**Which genre are you interested in?** {preferred_genre_text}")  # Display question with genre hint
-        genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for genres (hidden label)
-        
+        if content_type == "Film":  # User wants only movies
+             genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for genres (hidden label)
+        elif content_type == "Series":  # User wants only series
+            genre_choice = st.multiselect("", options=list(TV_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for genres (hidden label)
+       
+
         # Popularity type preference
         popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])  # Radio buttons for popularity
 
