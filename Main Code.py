@@ -55,20 +55,20 @@ series = [
 # Define the genre categories used in the radar chart
 genres = ["Comedy", "Horror", "Sci-Fi", "Drama", "Action", "Romance"]  # List of all available genres
 
-# Map each title to its genre composition (binary: 1 if title has genre, 0 if not)
+# Map each title to its genre composition
 title_genres = {
     "Pixels":               {"Comedy": 1, "Horror": 0, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},  # Comedy/Sci-Fi/Action blend
     "The Conjuring":        {"Comedy": 0, "Horror": 1, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},  # Pure horror
     "Blade Runner 2049":    {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 1, "Romance": 0},  # Sci-Fi/Drama/Action
     "The Shawshank Redemption": {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0},  # Pure drama
     "John Wick":            {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 1, "Romance": 0},  # Pure action
-    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 1},  # Drama/Romance
+    "The Notebook":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 0, "Romance": 0.5},  # Drama/Romance
 
     "Breaking Bad":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},  # Drama/Action series
     "Stranger Things":      {"Comedy": 0, "Horror": 1, "Sci-Fi": 1, "Drama": 0, "Action": 1, "Romance": 0},  # Horror/Sci-Fi/Action series
-    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 1},  # Comedy/Romance series
+    "Friends":              {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0.5},  # Comedy/Romance series
     "The Office":           {"Comedy": 1, "Horror": 0, "Sci-Fi": 0, "Drama": 0, "Action": 0, "Romance": 0},  # Pure comedy series
-    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 1},  # Drama/Action/Romance series
+    "Game of Thrones":      {"Comedy": 0, "Horror": 0, "Sci-Fi": 0, "Drama": 1, "Action": 1, "Romance": 0},  # Drama/Action/Romance series
     "Black Mirror":         {"Comedy": 0, "Horror": 0, "Sci-Fi": 1, "Drama": 1, "Action": 0, "Romance": 0},  # Sci-Fi/Drama series
 }
 
@@ -129,17 +129,40 @@ st.sidebar.pyplot(fig)  # Render matplotlib figure in Streamlit
 TMDB_API_KEY = "ef26791dfc9c3b8254044fe9167e3edb"  # API key for authenticating with TMDB
 TMDB_BASE_URL = "https://api.themoviedb.org/3"  # Base URL for all TMDB API endpoints
 
-# Map genre names to TMDB genre IDs
-GENRE_MAP = {
-    "Action": 28, "Comedy": 35, "Drama": 18, "Romance": 10749,  # Common genres
-    "Horror": 27, "Sci-Fi": 878, "Documentary": 99,  # More genres
-    "Animation": 16, "Mystery": 9648, "Thriller": 53  # Additional genres
+# Map genre names to TMDB genre IDs FOR MOVIES
+MOVIE_GENRE_MAP = {
+    "Action": 28,
+    "Comedy": 35,
+    "Drama": 18,
+    "Romance": 10749,
+    "Horror": 27,
+    "Sci-Fi": 878,
+    "Documentary": 99,
+    "Animation": 16,
+    "Mystery": 9648,
+    "Thriller": 53
+}
+
+# Map genre names to TMDB genre IDs FOR TV SERIES
+TV_GENRE_MAP = {
+    "Action": 10759,      # Action & Adventure
+    "Comedy": 35,
+    "Drama": 18,
+    "Sci-Fi": 10765,      # Sci-Fi & Fantasy
+    "Documentary": 99,
+    "Animation": 16,
+    "Mystery": 9648,
+    "Crime": 80
 }
 
 # ------------------- TMDB API FUNCTIONS -------------------
 # Function to fetch movies from TMDB based on genre and various filters
-def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=None, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
+def get_movies_by_genre(genre_name, popularity_type="popular", animation_filter=None, runtime_min=None, runtime_max=None, year_min=None, year_max=None, num_results=10):
     """Fetches movies from TMDB by genre with optional filters for popularity, animation, runtime and release year"""
+    genre_id = MOVIE_GENRE_MAP.get(genre_name)  # Use MOVIE_GENRE_MAP
+    if not genre_id:
+        return []
+    
     url = f"{TMDB_BASE_URL}/discover/movie"  # Build URL for movie discovery endpoint
     # Set up query parameters for the API request
     params = {
@@ -175,9 +198,12 @@ def get_movies_by_genre(genre_id, popularity_type="popular", animation_filter=No
     return []  # Return empty list if request failed
 
 # Function to fetch TV series from TMDB based on genre and various filters
-def get_series_by_genre(genre_id, popularity_type="popular", animation_filter=None, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
+def get_series_by_genre(genre_name, popularity_type="popular", animation_filter=None, episode_runtime_min=None, episode_runtime_max=None, year_min=None, year_max=None, num_results=10):
     """Fetches TV series from TMDB by genre with optional filters for popularity, animation and air date"""
-    # NOTE: Runtime filters removed as they don't work reliably with TMDB's TV API
+    genre_id = TV_GENRE_MAP.get(genre_name)  # Use TV_GENRE_MAP
+    if not genre_id:
+        return []
+    
     url = f"{TMDB_BASE_URL}/discover/tv"  # Build URL for TV discovery endpoint
     # Set up query parameters for the API request
     params = {
@@ -235,8 +261,6 @@ def get_movies_by_actor_or_director(name, runtime_min=None, runtime_max=None, ye
         if runtime_max:  # User specified maximum runtime
             discover_params["with_runtime.lte"] = runtime_max  # Less than or equal to max runtime
         # Apply year filters if specified
-        # Year filter are applied from Jan 1 to Dec 31
-        # year_min and year_max are chosen to implement the filter of modern or classic
         if year_min:  # User specified earliest year
             discover_params["primary_release_date.gte"] = f"{year_min}-01-01"  # Format as date (Jan 1)
         if year_max:  # User specified latest year
@@ -393,8 +417,8 @@ def save_liked_movie(movie_id, title, genres, rating, liked=True):
 # Function to create a feature vector for machine learning
 def create_movie_feature_vector(movie):
     """Create a feature vector for a movie based on genres, rating, and popularity"""
-    # Get all possible genre IDs from GENRE_MAP
-    all_genre_ids = list(GENRE_MAP.values())  # Extract all genre ID values
+    # Get all possible genre IDs from both MOVIE_GENRE_MAP and TV_GENRE_MAP
+    all_genre_ids = list(set(list(MOVIE_GENRE_MAP.values()) + list(TV_GENRE_MAP.values())))
     
     # Create genre vector (binary: 1 if movie has genre, 0 otherwise)
     movie_genres = movie.get("genre_ids", [])  # Get list of genre IDs for this movie
@@ -458,7 +482,7 @@ def special_buttons():
     col1, col2, col3 = st.columns([2, 3, 2])  # Create three columns with specific width ratios
     with col1:  # Use left column
         if st.button("Random Movie", key="random_btn", use_container_width=True):  # Create full-width button
-            goto("random") # Navigate to random movie page
+            goto("random")  # Navigate to random movie page
             st.rerun()
     with col3:  # Use right column
         if st.button("Ryan Gosling", key="gosling_btn", use_container_width=True):  # Create full-width button
@@ -471,7 +495,7 @@ if st.session_state.page == "step1":  # Check if current page is step1
     special_buttons()  # Display Random Movie and Ryan Gosling buttons
     st.title("What2Watch")  # Display main title
     with st.form("step1_form"):  # Create form to group inputs
-        content_type = st.radio("Do you want to watch a movie, series, or both?", ["Film", "Series", "Both"])  # Radio buttons for content type
+        content_type = st.radio("Do you want to watch a movie or a serie?", ["Film", "Series"])  # Radio buttons for content type
         next_button = st.form_submit_button("Next")  # Submit button
     if next_button:  # Check if user clicked Next
         st.session_state.preferences["content_type"] = content_type  # Save content type to session
@@ -490,16 +514,6 @@ elif st.session_state.page == "step2":  # Check if current page is step2
             length = st.radio("Preferred movie length:", ["Short (< 90 min)", "Medium (90–120 min)", "Long (> 120 min)", "Any length"])  # Movie length options
         elif content_type == "Series":  # User wants only series
             length = st.radio("Preferred episode length:", ["< 30 min", "30–60 min", "60+ min", "Any length"])  # Episode length options
-        else:  # User wants both movies and series
-            length = st.radio("Preferred duration:", [
-                "Short Movie (< 90 min)",  # Short movie option
-                "Medium Movie (90–120 min)",  # Medium movie option
-                "Long Movie (> 120 min)",  # Long movie option
-                "Short Episode (< 30 min)",  # Short episode option
-                "Standard Episode (30–60 min)",  # Standard episode option
-                "Long Episode (> 60 min)",  # Long episode option
-                "Any length"  # No preference option
-            ])
 
         # Animation preference
         animation_preference = st.radio("Would you prefer animated or live-action?", ["Animated", "Live-action", "Both"])  # Radio buttons for animation type
@@ -520,8 +534,12 @@ elif st.session_state.page == "step2":  # Check if current page is step2
                     preferred_genre_text = f"(Your preferred genres are **{', '.join(top_genres)}**)"  # Show plural message with comma-separated list
         
         st.markdown(f"**Which genre are you interested in?** {preferred_genre_text}")  # Display question with genre hint
-        genre_choice = st.multiselect("", options=list(GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for genres (hidden label)
-        
+        if content_type == "Film":  # User wants only movies
+             genre_choice = st.multiselect("", options=list(MOVIE_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for Movie genres (hidden label)
+        elif content_type == "Series":  # User wants only series
+            genre_choice = st.multiselect("", options=list(TV_GENRE_MAP.keys()), label_visibility="collapsed")  # Multi-select dropdown for TV genres (hidden label)
+       
+
         # Popularity type preference
         popularity_type = st.radio("Do you want a well-known hit or a hidden gem?", ["Popular & trending", "Underrated", "Both"])  # Radio buttons for popularity
 
@@ -597,7 +615,7 @@ elif st.session_state.page == "results":  # Check if current page is results
         liked_movies_list = load_liked_movies()  # Load user's liked movies from JSON file
         
         # Show Movies section
-        if content_type in ["Film", "Both"]:  # Check if user wants movie recommendations
+        if content_type in ["Film"]:  # Check if user wants movie recommendations
             st.subheader("Recommended Movies:")  # Display section header
 
             # Show personalization info if user has liked movies
@@ -606,135 +624,135 @@ elif st.session_state.page == "results":  # Check if current page is results
             
             # Loop through each selected genre
             for genre in prefs["genres"]:  # Iterate through user's selected genres
-                genre_id = GENRE_MAP.get(genre)  # Get TMDB genre ID for this genre
-                if genre_id:  # Verify genre ID exists
-                    # Fetch movies from TMDB API
-                    movies = get_movies_by_genre(
-                        genre_id,  # Genre to search for
-                        popularity_type=pop_type,  # Popular or underrated
-                        animation_filter=prefs.get("animation_preference"),  # Animated/Live-action/Both
-                        runtime_min=runtime_min,  # Minimum runtime
-                        runtime_max=runtime_max,  # Maximum runtime
-                        year_min=year_min,  # Earliest release year
-                        year_max=year_max,  # Latest release year
-                        num_results=10  # Number of results to fetch
-                    )
+                # Fetch movies from TMDB API (now passing genre name instead of ID)
+                movies = get_movies_by_genre(
+                    genre,  # Genre name (not ID)
+                    popularity_type=pop_type,  # Popular or underrated
+                    animation_filter=prefs.get("animation_preference"),  # Animated/Live-action/Both
+                    runtime_min=runtime_min,  # Minimum runtime
+                    runtime_max=runtime_max,  # Maximum runtime
+                    year_min=year_min,  # Earliest release year
+                    year_max=year_max,  # Latest release year
+                    num_results=10  # Number of results to fetch
+                )
 
-                    if not movies:  # Check if API returned any movies
-                        continue  # Skip to next genre if no movies found
+                if not movies:  # Check if API returned any movies
+                    continue  # Skip to next genre if no movies found
 
-                    # Re-rank movies using Machine Learning if user has liked movies
-                    if liked_movies_list:  # Check if personalization data exists
-                        movies = reorder_movies_by_preference(movies, liked_movies_list)  # Apply ML-based reordering
+                # Re-rank movies using Machine Learning if user has liked movies
+                if liked_movies_list:  # Check if personalization data exists
+                    movies = reorder_movies_by_preference(movies, liked_movies_list)  # Apply ML-based reordering
+                
+                st.markdown(f"### {genre}")  # Display genre header
+                # Loop through each movie in the results
+                for movie in movies:  # Iterate through movie list
+                    title = movie.get("title")  # Get movie title
+                    overview = movie.get("overview", "No description available.")  # Get overview (with default)
+                    poster_path = movie.get("poster_path")  # Get poster image path
+                    poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None  # Build full poster URL if path exists
+                    imdb_score = movie.get("vote_average")  # Get IMDb rating
+                    movie_id = movie.get("id")  # Get TMDB movie ID
+                    release_year = movie.get("release_date", "")[:4]  # Extract year from release date (first 4 characters)
+                    trailer_url = get_trailer(movie_id, "movie")  # Fetch trailer URL
+                    movie_genres = movie.get("genre_ids",[])  # Get list of genre IDs for this movie
+
+                    # Create header row with Like/Dislike buttons
+                    col1,col2 = st.columns([3,1])  # Create two columns (3:1 ratio)
+                    with col1:  # Left column for title
+                        st.markdown(f"**{title}** ({release_year})")  # Display bold title with year
+                    with col2:  # Right column for buttons
+                        like_key = f"like_{movie_id}_{genre}"  # Create unique key for Like button
+                        dislike_key = f"dislike_{movie_id}_{genre}"  # Create unique key for Dislike button
+
+                        col_like, col_dislike = st.columns(2)  # Create two sub-columns for buttons
+                    with col_like:  # Like button column
+                        if st.button("Like", key=like_key):  # Create Like button
+                            save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=True)  # Save as liked movie
+                            st.success(f"Saved '{title}' to your preferences!")  # Show success message
+                            st.rerun()  # Refresh page to apply changes
+                    with col_dislike:  # Dislike button column
+                        if st.button("Dislike", key=dislike_key):  # Create Dislike button
+                            save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)  # Save as disliked movie
+                            st.info(f"Noted that you don't like '{title}'")  # Show info message
+                            st.rerun()  # Refresh page to apply changes
                     
-                    st.markdown(f"### {genre}")  # Display genre header
-                    # Loop through each movie in the results
-                    for movie in movies:  # Iterate through movie list
-                        title = movie.get("title")  # Get movie title
-                        overview = movie.get("overview", "No description available.")  # Get overview (with default)
-                        poster_path = movie.get("poster_path")  # Get poster image path
-                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None  # Build full poster URL if path exists
-                        imdb_score = movie.get("vote_average")  # Get IMDb rating
-                        movie_id = movie.get("id")  # Get TMDB movie ID
-                        release_year = movie.get("release_date", "")[:4]  # Extract year from release date (first 4 characters)
-                        trailer_url = get_trailer(movie_id, "movie")  # Fetch trailer URL
-                        movie_genres = movie.get("genre_ids",[])  # Get list of genre IDs for this movie
+                    # Display movie details
+                    if poster_url:  # Check if poster URL exists
+                        st.image(poster_url, width=150)  # Display poster image
+                    st.markdown(f"IMDb Score: {imdb_score}")  # Display rating
+                    st.caption(overview)  # Display movie overview
+                    if trailer_url:  # Check if trailer URL exists
+                        st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)  # Display trailer link
+                    st.markdown("---")  # Display horizontal divider
+        
+        # Show Series section
+        if content_type in ["Series"]:  # Check if user wants series recommendations
+            st.subheader("Recommended Series:")  # Display section header
 
+            if liked_movies_list:
+                st.info(f"Personalizing recommendations based on {len(liked_movies_list)}liked title(s)")
+
+            # Loop through each selected genre
+            for genre in prefs["genres"]:  # Iterate through user's selected genres
+                # Fetch series from TMDB API (now passing genre name instead of ID)
+                series_list = get_series_by_genre(
+                    genre,  # Genre name (not ID)
+                    popularity_type=pop_type,  # Popular or underrated
+                    animation_filter=prefs.get("animation_preference"),  # Animated/Live-action/Both
+                    episode_runtime_min=episode_runtime_min,  # Minimum episode runtime
+                    episode_runtime_max=episode_runtime_max,  # Maximum episode runtime
+                    year_min=year_min,  # Earliest air date
+                    year_max=year_max,  # Latest air date
+                    num_results=10  # Number of results to fetch
+                )
+
+                # Re-rank using Machine Learning
+                if liked_movies_list and series_list:  # Check if personalization data and results exist
+                    series_list = reorder_movies_by_preference(series_list, liked_movies_list)  # Apply ML-based reordering
+
+                if series_list:  # Check if API returned any series
+                    st.markdown(f"### {genre}")  # Display genre header
+                    # Loop through each series in the results
+                    for series in series_list:  # Iterate through series list
+                        title = series.get("name")  # Get series name (note: "name" not "title" for TV)
+                        overview = series.get("overview", "No description available.")  # Get overview (with default)
+                        poster_path = series.get("poster_path")  # Get poster image path
+                        poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None  # Build full poster URL if path exists
+                        imdb_score = series.get("vote_average")  # Get IMDb rating
+                        series_id = series.get("id")  # Get TMDB series ID
+                        first_air_year = series.get("first_air_date", "")[:4]  # Extract year from first air date (first 4 characters)
+                        trailer_url = get_trailer(series_id, "tv")  # Fetch trailer URL (note: content_type="tv")
+                        series_genres = series.get("genre_ids", [])  # Get list of genre IDs for this series
+                        
                         # Create header row with Like/Dislike buttons
-                        col1,col2 = st.columns([3,1])  # Create two columns (3:1 ratio)
+                        col1, col2 = st.columns([3, 1])  # Create two columns (3:1 ratio)
                         with col1:  # Left column for title
-                            st.markdown(f"**{title}** ({release_year})")  # Display bold title with year
+                            st.markdown(f"**{title}** ({first_air_year})")  # Display bold title with year
                         with col2:  # Right column for buttons
-                            like_key = f"like_{movie_id}_{genre}"  # Create unique key for Like button
-                            dislike_key = f"dislike_{movie_id}_{genre}"  # Create unique key for Dislike button
+                            like_key = f"like_series_{series_id}_{genre}"  # Create unique key for Like button
+                            dislike_key = f"dislike_series_{series_id}_{genre}"  # Create unique key for Dislike button
 
                             col_like, col_dislike = st.columns(2)  # Create two sub-columns for buttons
-                        with col_like:  # Like button column
-                            if st.button("Like", key=like_key):  # Create Like button
-                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=True)  # Save as liked movie
-                                st.success(f"Saved '{title}' to your preferences!")  # Show success message
-                                st.rerun()  # Refresh page to apply changes
-                        with col_dislike:  # Dislike button column
-                            if st.button("Dislike", key=dislike_key):  # Create Dislike button
-                                save_liked_movie(movie_id, title, movie_genres, imdb_score, liked=False)  # Save as disliked movie
-                                st.info(f"Noted that you don't like '{title}'")  # Show info message
-                                st.rerun()  # Refresh page to apply changes
-                        
-                        # Display movie details
+                            with col_like:  # Like button column
+                                if st.button("Like", key=like_key):  # Create Like button
+                                    save_liked_movie(series_id, title, series_genres, imdb_score, liked=True)  # Save as liked series
+                                    st.success(f"Saved '{title}' to your preferences!")  # Show success message
+                                    st.rerun()  # Refresh page to apply changes
+
+                            with col_dislike:  # Dislike button column
+                                if st.button("Dislike", key=dislike_key):  # Create Dislike button
+                                    save_liked_movie(series_id, title, series_genres, imdb_score, liked=False)  # Save as disliked series
+                                    st.info(f"Noted that you don't like '{title}'")  # Show info message
+                                    st.rerun()  # Refresh page to apply changes
+                      
+                        # Display series details
                         if poster_url:  # Check if poster URL exists
                             st.image(poster_url, width=150)  # Display poster image
                         st.markdown(f"IMDb Score: {imdb_score}")  # Display rating
-                        st.caption(overview)  # Display movie overview
+                        st.caption(overview)  # Display series overview
                         if trailer_url:  # Check if trailer URL exists
                             st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)  # Display trailer link
                         st.markdown("---")  # Display horizontal divider
-        
-        # Show Series section
-        if content_type in ["Series", "Both"]:  # Check if user wants series recommendations
-            st.subheader("Recommended Series:")  # Display section header
-            # Loop through each selected genre
-            for genre in prefs["genres"]:  # Iterate through user's selected genres
-                genre_id = GENRE_MAP.get(genre)  # Get TMDB genre ID for this genre
-                if genre_id:  # Verify genre ID exists
-                    # Fetch series from TMDB API
-                    series_list = get_series_by_genre(
-                        genre_id,  # Genre to search for
-                        popularity_type=pop_type,  # Popular or underrated
-                        animation_filter=prefs.get("animation_preference"),  # Animated/Live-action/Both
-                        episode_runtime_min=episode_runtime_min,  # Minimum episode runtime
-                        episode_runtime_max=episode_runtime_max,  # Maximum episode runtime
-                        year_min=year_min,  # Earliest air date
-                        year_max=year_max,  # Latest air date
-                        num_results=10  # Number of results to fetch
-                    )
-
-                    # Re-rank using Machine Learning
-                    if liked_movies_list and series_list:  # Check if personalization data and results exist
-                        series_list = reorder_movies_by_preference(series_list, liked_movies_list)  # Apply ML-based reordering
-
-                    if series_list:  # Check if API returned any series
-                        st.markdown(f"### {genre}")  # Display genre header
-                        # Loop through each series in the results
-                        for series in series_list:  # Iterate through series list
-                            title = series.get("name")  # Get series name (note: "name" not "title" for TV)
-                            overview = series.get("overview", "No description available.")  # Get overview (with default)
-                            poster_path = series.get("poster_path")  # Get poster image path
-                            poster_url = f"https://image.tmdb.org/t/p/w200{poster_path}" if poster_path else None  # Build full poster URL if path exists
-                            imdb_score = series.get("vote_average")  # Get IMDb rating
-                            series_id = series.get("id")  # Get TMDB series ID
-                            first_air_year = series.get("first_air_date", "")[:4]  # Extract year from first air date (first 4 characters)
-                            trailer_url = get_trailer(series_id, "tv")  # Fetch trailer URL (note: content_type="tv")
-                            series_genres = series.get("genre_ids", [])  # Get list of genre IDs for this series
-                            
-                            # Create header row with Like/Dislike buttons
-                            col1, col2 = st.columns([3, 1])  # Create two columns (3:1 ratio)
-                            with col1:  # Left column for title
-                                st.markdown(f"**{title}** ({first_air_year})")  # Display bold title with year
-                            with col2:  # Right column for buttons
-                                like_key = f"like_series_{series_id}_{genre}"  # Create unique key for Like button
-                                dislike_key = f"dislike_series_{series_id}_{genre}"  # Create unique key for Dislike button
-
-                                col_like, col_dislike = st.columns(2)  # Create two sub-columns for buttons
-                                with col_like:  # Like button column
-                                    if st.button("Like", key=like_key):  # Create Like button
-                                        save_liked_movie(series_id, title, series_genres, imdb_score, liked=True)  # Save as liked series
-                                        st.success(f"Saved '{title}' to your preferences!")  # Show success message
-                                        st.rerun()  # Refresh page to apply changes
-
-                                with col_dislike:  # Dislike button column
-                                    if st.button("Dislike", key=dislike_key):  # Create Dislike button
-                                        save_liked_movie(series_id, title, series_genres, imdb_score, liked=False)  # Save as disliked series
-                                        st.info(f"Noted that you don't like '{title}'")  # Show info message
-                                        st.rerun()  # Refresh page to apply changes
-                          
-                            # Display series details
-                            if poster_url:  # Check if poster URL exists
-                                st.image(poster_url, width=150)  # Display poster image
-                            st.markdown(f"IMDb Score: {imdb_score}")  # Display rating
-                            st.caption(overview)  # Display series overview
-                            if trailer_url:  # Check if trailer URL exists
-                                st.markdown(f"[Watch Trailer]({trailer_url})", unsafe_allow_html=True)  # Display trailer link
-                            st.markdown("---")  # Display horizontal divider
 
         # Show content by favorite actor/director section
         if prefs.get("favorite_person"):  # Check if user entered a favorite actor/director
@@ -857,7 +875,7 @@ elif st.session_state.page == "results":  # Check if current page is results
         # Add spacing before Start Over button
         st.write("")  # Empty line for spacing
         if st.button("Start Over"):  # Create button to restart
-            goto("step1") # Navigate back to step 1
+            goto("step1")  # Navigate back to step 1
             st.rerun()
 
 # ------------------- RANDOM MOVIE MODE -------------------
