@@ -112,5 +112,6 @@ It was also used for Implementation tips. So anytime ChatGPT was used we noted t
 
 ## Team Structure
 This Matrix shows the structure and Organization inside our Team, it visualizes roles, responsibilities and documents individual Contributions to the Project in a contribution Matrix.
-<img width="2494" height="966" alt="image" src="https://github.com/user-attachments/assets/fe56de49-1044-4b67-b461-8b2d0d319a26" />
+<img width="1645" height="660" alt="image" src="https://github.com/user-attachments/assets/70677242-5d5a-47a1-940b-b7a5e9bc4d80" />
+
 
